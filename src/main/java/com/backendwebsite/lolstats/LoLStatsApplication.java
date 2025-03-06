@@ -11,7 +11,7 @@ public class LoLStatsApplication {
         SpringApplication.run(LoLStatsApplication.class, args);
 
         DatabaseBuilder DatabaseBuilder = new DatabaseBuilder();
-        DatabaseBuilder.exampleQuery();
+        DatabaseBuilder.buildDatabase();
     }
 
 }
