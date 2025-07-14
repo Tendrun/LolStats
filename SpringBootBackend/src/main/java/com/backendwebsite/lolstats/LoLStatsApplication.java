@@ -10,8 +10,8 @@ public class LoLStatsApplication {
     public static void main(String[] args) {
         SpringApplication.run(LoLStatsApplication.class, args);
 
-        //DatabaseBuilder DatabaseBuilder = new DatabaseBuilder();
-        //DatabaseBuilder.buildDatabase();
+        DatabaseBuilder DatabaseBuilder = new DatabaseBuilder();
+        DatabaseBuilder.buildDatabase();
     }
 
 }

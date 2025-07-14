@@ -1,14 +1,8 @@
 package Database.Models;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "matches")
 public class LeagueEntryDTO {
 
-    @Id
-    private String id;
-
+    private String _id; // CouchDB uses _id
     private String leagueId;
     private String queueType;
     private String tier;
@@ -23,14 +17,14 @@ public class LeagueEntryDTO {
     private boolean freshBlood;
     private boolean hotStreak;
 
-    // Getters and setters (or use Lombok annotations like @Data)
+    // Getters and Setters
 
-    public String getId() {
-        return id;
+    public String get_id() {
+        return _id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void set_id(String _id) {
+        this._id = _id;
     }
 
     public String getLeagueId() {
