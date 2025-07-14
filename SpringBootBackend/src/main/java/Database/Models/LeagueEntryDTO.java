@@ -1,5 +1,8 @@
 package Database.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LeagueEntryDTO {
 
     private String _id; // CouchDB uses _id
