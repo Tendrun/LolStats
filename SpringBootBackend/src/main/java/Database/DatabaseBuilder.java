@@ -25,25 +25,39 @@ public class DatabaseBuilder {
     private final String riotGamesApiKey;
     private final String couchDbUrl;
 
+    private final List<String> ListOfMatches = new ArrayList<>();
+
     public DatabaseBuilder() {
         this.riotGamesApiKey = loadSecretValue("RIOTGAMES_API_KEY");
         this.couchDbUrl = loadSecretValue("COUCHDB_URL"); // e.g. http://admin:admin@localhost:5984
     }
 
     public void buildDatabase() {
-        getPlayers(); // krok 1: pobierz/odśwież graczy z Riot API
-
-        List<LeagueEntryDTO> players = getAllPlayers(); // krok 2: pobierz graczy z bazy
+        /*getPlayers("IRON"); // krok 1: pobierz/odśwież graczy z Riot API
+        getPlayers("BRONZE"); // Od rangi Iron do Diamond
+        getPlayers("SILVER");
+        getPlayers("GOLD");
+        getPlayers("PLATINUM");
+        getPlayers("EMERALD");
+        getPlayers("DIAMOND");
+        */
+        /*
+        List<LeagueEntryDTO> players = getAllPlayers(); // krok 2: pobierz wszystkich graczy z bazy
 
         for (LeagueEntryDTO player : players) {
             String puuid = player.getPuuid();
             if (puuid != null && !puuid.isEmpty()) {
                 System.out.println("=== Fetching matches for: " + puuid + " ===");
-                getPlayerMatches(puuid); // krok 3: pobierz mecze i zapisz
+                getPlayerMatches(puuid, "2"); // krok 3: pobierz mecze i zapisz
             } else {
                 System.out.println("Skipping player with missing PUUID: " + player.get_id());
             }
         }
+        */
+        for (String match : getAllMatches()){
+            getMatchData(match);
+        }
+
     }
 
 
@@ -79,10 +93,9 @@ public class DatabaseBuilder {
         return players;
     }
 
-
-    public void getPlayers() {
+    public void getPlayers(String tier) {
         String region = "eun1";
-        String url = "https://" + region + ".api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/IRON/IV?page=1";
+        String url = "https://" + region + ".api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/" + tier + "/IV?page=1";
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -141,10 +154,10 @@ public class DatabaseBuilder {
         }
     }
 
-    public void getPlayerMatches(String puuid) {
+    public void getPlayerMatches(String puuid, String count) {
         String region = "europe";
         String url = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuid
-                + "/ids?start=0&count=20";
+                + "/ids?start=0&count=" + count;
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -187,6 +200,7 @@ public class DatabaseBuilder {
 
                     BufferedReader reader = new BufferedReader(new InputStreamReader(dbResponse.getEntity().getContent()));
                     String responseBody = reader.lines().reduce("", (a, b) -> a + b);
+                    ListOfMatches.add(responseBody); // Dodaj mecz do listy
                     System.out.println("PUT response body: " + responseBody);
 
                     if (dbResponse.getStatusLine().getStatusCode() != 201 &&
@@ -196,6 +210,85 @@ public class DatabaseBuilder {
                 }
                 System.out.println("All match IDs uploaded to CouchDB");
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<String> getAllMatches() {
+        List<String> matches = new ArrayList<>();
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String fullUrl = couchDbUrl + "/matches/_all_docs?include_docs=true";
+
+            HttpGet get = new HttpGet(fullUrl);
+            String auth = "admin:admin";
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+            get.setHeader("Authorization", "Basic " + encodedAuth);
+
+            HttpResponse response = httpClient.execute(get);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode root = mapper.readTree(response.getEntity().getContent());
+
+                for (JsonNode row : root.get("rows")) {
+                    JsonNode id = row.get("id");
+                    matches.add(id.asText());
+                }
+            } else {
+                System.err.println("Failed to fetch players: " + response.getStatusLine());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return matches;
+    }
+
+    public void getMatchData(String matchId) {
+        String region = "europe";
+        String url = "https://" + region + ".api.riotgames.com/lol/match/v5/matches/" + matchId;
+
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("X-Riot-Token", riotGamesApiKey)
+                .build();
+
+        try {
+            java.net.http.HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+            if (response.statusCode() != 200) {
+                System.err.println("Riot API error: " + response.statusCode());
+                return;
+            }
+
+            String json = response.body(); // ← cały JSON meczu
+
+            String fullUrl = couchDbUrl + "/detailedmatches/" + matchId;
+
+            HttpPut put = new HttpPut(fullUrl);
+            put.setHeader("Content-type", "application/json");
+            String auth = "admin:admin";
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+            put.setHeader("Authorization", "Basic " + encodedAuth);
+            put.setEntity(new StringEntity(json));
+
+            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+                System.out.println("PUT -> " + fullUrl);
+                HttpResponse dbResponse = httpClient.execute(put);
+
+                System.out.println("Status: " + dbResponse.getStatusLine());
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(dbResponse.getEntity().getContent()));
+                String responseBody = reader.lines().reduce("", (a, b) -> a + b);
+                System.out.println("PUT response body: " + responseBody);
+
+                if (dbResponse.getStatusLine().getStatusCode() != 201 &&
+                        dbResponse.getStatusLine().getStatusCode() != 202) {
+                    System.err.println("Failed to save match: " + dbResponse.getStatusLine());
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
