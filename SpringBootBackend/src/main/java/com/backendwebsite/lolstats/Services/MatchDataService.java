@@ -1,4 +1,4 @@
-package Services;
+package com.backendwebsite.lolstats.Services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,6 +9,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import static com.backendwebsite.lolstats.Constants.KeysLoader.loadSecretValue;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -24,8 +25,8 @@ public class MatchDataService {
     private final String couchDbUrl;
 
     public MatchDataService(String riotGamesApiKey, String couchDbUrl) {
-        this.riotGamesApiKey = riotGamesApiKey;
-        this.couchDbUrl = couchDbUrl;
+        this.riotGamesApiKey = loadSecretValue("RIOTGAMES_API_KEY");
+        this.couchDbUrl = loadSecretValue("COUCHDB_URL"); // e.g. http://admin:admin@localhost:5984
     }
 
     public List<String> getAllMatchesFromCouchDB() {

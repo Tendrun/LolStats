@@ -1,7 +1,15 @@
 import './ChampionTable.css';
+import { useNavigate } from "react-router-dom";
 
 
 export default function ChampionTable({ champions }) {
+  const navigate = useNavigate();
+
+      const handleChampionClick = (champ) => {
+      navigate(`/champions/${champ.name.toLowerCase()}`);
+    };
+
+    
     return (
     <div className="table-wrapper">
       <table className="champion-table">
@@ -20,13 +28,16 @@ export default function ChampionTable({ champions }) {
         </thead>
         <tbody>
           {champions.map((champ, idx) => (
-            <tr key={idx}>
+            <tr key={idx} >
               <td>{idx + 1}</td>
               <td>
                 <img
                   src={`/ChampionIcons/${champ.image}`}
                   alt={champ.name}
                   className="champion-icon"
+                  onClick={() => handleChampionClick(champ)}
+                      style={{ cursor: "pointer" }}
+
                 />
                 {champ.name}
               </td>

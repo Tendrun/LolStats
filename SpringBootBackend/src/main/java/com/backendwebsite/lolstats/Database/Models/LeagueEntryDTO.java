@@ -1,4 +1,4 @@
-package Database.Models;
+package com.backendwebsite.lolstats.Database.Models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

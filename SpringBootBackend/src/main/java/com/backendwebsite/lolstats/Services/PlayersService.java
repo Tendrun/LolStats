@@ -1,6 +1,6 @@
-package Services;
+package com.backendwebsite.lolstats.Services;
 
-import Database.Models.LeagueEntryDTO;
+import com.backendwebsite.lolstats.Database.Models.LeagueEntryDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
@@ -9,6 +9,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,15 +19,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.*;
 
+import static com.backendwebsite.lolstats.Constants.KeysLoader.loadSecretValue;
+
+
+@Service
 public class PlayersService {
 
     private final String riotGamesApiKey;
     private final String couchDbUrl;
 
 
-    public PlayersService(String riotGamesApiKey, String couchDbUrl) {
-        this.riotGamesApiKey = riotGamesApiKey;
-        this.couchDbUrl = couchDbUrl;
+    public PlayersService() {
+        this.riotGamesApiKey = loadSecretValue("RIOTGAMES_API_KEY");
+        this.couchDbUrl = loadSecretValue("COUCHDB_URL");
     }
 
     public List<LeagueEntryDTO> getAllPlayersCouchDB() {

@@ -1,4 +1,4 @@
-package Static;
+package com.backendwebsite.lolstats.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -202,8 +202,6 @@ public class ChampionStatsMap {
             this.bannedMatches = 0;
             this.pickedMatches = 0;
         }
-
-        // Gettery i settery (możesz dodać jeśli będą potrzebne)
     }
 }
 

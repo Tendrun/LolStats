@@ -1,6 +1,6 @@
 package com.backendwebsite.lolstats;
 
-import Database.DatabaseBuilder;
+import com.backendwebsite.lolstats.Database.DatabaseBuilder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

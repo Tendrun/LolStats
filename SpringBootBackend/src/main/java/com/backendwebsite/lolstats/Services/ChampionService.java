@@ -1,6 +1,7 @@
-package Services;
+package com.backendwebsite.lolstats.Services;
 
-import Static.ChampionStatsMap;
+import com.backendwebsite.lolstats.Constants.ChampionStatsMap;
+import com.backendwebsite.lolstats.Constants.ChampionStatsMap.ChampionDetails;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -12,19 +13,28 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
 
+import static com.backendwebsite.lolstats.Constants.KeysLoader.loadSecretValue;
+
+@Service
 public class ChampionService {
 
     private final String riotGamesApiKey;
     private final String couchDbUrl;
 
-
-    public ChampionService(String riotGamesApiKey, String couchDbUrl) {
-        this.riotGamesApiKey = riotGamesApiKey;
-        this.couchDbUrl = couchDbUrl; // e.g. http://admin:admin@localhost:5984
+    public ChampionService() {
+        this.riotGamesApiKey = loadSecretValue("RIOTGAMES_API_KEY");
+        this.couchDbUrl = loadSecretValue("COUCHDB_URL");
     }
 
     public void pushChampionDetailsToCouchDB() {
@@ -140,4 +150,32 @@ public class ChampionService {
         }
     }
 
+    public List<ChampionDetails> getAllChampDetailsFromCouchDB() {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String URL = couchDbUrl + "/championdetails/" + "_all_docs";
+            String auth = "admin:admin";
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+
+            // GET dla _rev
+            HttpGet getChampionsDetails = new HttpGet(URL);
+            getChampionsDetails.setHeader("Authorization", "Basic " + encodedAuth);
+            HttpResponse response = httpClient.execute(getChampionsDetails);
+
+            System.out.println("Status: " + response.getStatusLine());
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            String responseBody = reader.lines().reduce("", (a, b) -> a + b);
+            System.out.println("PUT response body: " + responseBody);
+
+
+            if (response.getStatusLine().getStatusCode() != 201) {
+                System.err.println("Failed to save match: " + response.getStatusLine());
+            }
+
+            System.out.println("All matches uploaded to CouchDB");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
+    }
 }

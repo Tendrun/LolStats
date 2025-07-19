@@ -1,6 +1,6 @@
-package Services;
+package com.backendwebsite.lolstats.Services;
 
-import Database.Models.LeagueEntryDTO;
+import com.backendwebsite.lolstats.Database.Models.LeagueEntryDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 

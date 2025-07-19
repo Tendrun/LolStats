@@ -1,4 +1,4 @@
-package CouchDB;
+package com.backendwebsite.lolstats.CouchDB;
 
 import org.lightcouch.CouchDbClient;
 import org.lightcouch.CouchDbProperties;
@@ -11,7 +11,7 @@ public class CouchDbConfig {
     @Bean
     public CouchDbClient couchDbClient() {
         CouchDbProperties properties = new CouchDbProperties()
-                .setDbName("leaguebase")
+                .setDbName("championdetails")
                 .setCreateDbIfNotExist(true)
                 .setProtocol("http")
                 .setHost("localhost")
