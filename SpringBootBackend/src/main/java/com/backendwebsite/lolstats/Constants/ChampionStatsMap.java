@@ -183,6 +183,11 @@ public class ChampionStatsMap {
         CHAMPION_MAP_INTERNAL.put(142, new ChampionDetails(142, "Zoe"));
         CHAMPION_MAP_INTERNAL.put(143, new ChampionDetails(143, "Zyra"));
 
+
+        /// UNKNOWN SITUATIONS
+        CHAMPION_MAP_INTERNAL.put(3151, new ChampionDetails(3151, "Unknown"));
+
+
         CHAMPION_MAP = Collections.unmodifiableMap(CHAMPION_MAP_INTERNAL);
     }
 

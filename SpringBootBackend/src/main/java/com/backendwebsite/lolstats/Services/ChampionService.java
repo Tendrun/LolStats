@@ -107,13 +107,12 @@ public class ChampionService {
                 ///  Update champion Detail
                 JsonNode participants = root.get("info").get("participants");
                 for (JsonNode participant : participants) {
+
+                    ///  Wez ChamponId z jsona
                     int championId = participant.get("championId").asInt();
 
                     ///  Znajdz championa
                     ChampionStatsMap.ChampionDetails championToModify = ChampionStatsMap.CHAMPION_MAP.get(championId);
-
-                    System.out.println("ChampionId = " + championId
-                            + " Total Matches = " + championToModify.totalMatches);
 
                     /// Policz ile było ogólem meczy
                     championToModify.totalMatches += 1;
@@ -122,9 +121,6 @@ public class ChampionService {
                     if (participant.get("win").asBoolean()) {
                         championToModify.wonMatches += 1;
                     }
-
-                    System.out.println("ChampionId = " + championId
-                            + " Total Matches = " + championToModify.totalMatches);
                 }
 
                 ///  Policz Ban Rate
@@ -132,6 +128,8 @@ public class ChampionService {
                 for (JsonNode team : teams) {
                     JsonNode bans = team.get("bans");
                     for (JsonNode ban : bans) {
+
+                        ///  Wez ChamponId z jsona
                         int championId = ban.get("championId").asInt();
 
                         /// Nothing banned
@@ -139,8 +137,9 @@ public class ChampionService {
                             continue;
                         }
 
-                        ChampionStatsMap.ChampionDetails championToModify = ChampionStatsMap.CHAMPION_MAP
-                                .get(ban.get("championId").asInt());
+                        ///  Znajdz championa
+                        ChampionStatsMap.ChampionDetails championToModify =
+                                ChampionStatsMap.CHAMPION_MAP.get(championId);
 
                         championToModify.bannedMatches += 1;
                     }
