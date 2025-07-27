@@ -187,7 +187,7 @@ public class ChampionService {
 
         return matchesWithNami;
     }
-    
+
     public List<ChampionDetails> getAllChampDetailsFromCouchDB() {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             String URL = couchDbUrl + "/championdetails/" + "_all_docs";

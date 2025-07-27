@@ -173,6 +173,7 @@ public class ChampionStatsMap {
         CHAMPION_MAP_INTERNAL.put(157, new ChampionDetails(157, "Yasuo"));
         CHAMPION_MAP_INTERNAL.put(777, new ChampionDetails(777, "Yone"));
         CHAMPION_MAP_INTERNAL.put(83, new ChampionDetails(83, "Yorick"));
+        CHAMPION_MAP_INTERNAL.put(804, new ChampionDetails(804, "Yunara"));
         CHAMPION_MAP_INTERNAL.put(350, new ChampionDetails(350, "Yuumi"));
         CHAMPION_MAP_INTERNAL.put(154, new ChampionDetails(154, "Zac"));
         CHAMPION_MAP_INTERNAL.put(238, new ChampionDetails(238, "Zed"));
@@ -207,15 +208,6 @@ public class ChampionStatsMap {
             this.bannedMatches = 0;
             this.pickedMatches = 0;
         }
-
-        public static ChampionDetails getChampionOrLog(int championId) {
-            ChampionDetails details = CHAMPION_MAP.get(championId);
-            if (details == null) {
-                System.err.println("❌ Brak championa w CHAMPION_MAP: championId = " + championId);
-            }
-            return details;
-        }
-
     }
 }
 
