@@ -8,18 +8,18 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +43,6 @@ public class ChampionService {
             ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
 
             for (ChampionStatsMap.ChampionDetails championDetails : ChampionStatsMap.CHAMPION_MAP.values()) {
-                System.out.println(championDetails.championID + " " + championDetails.totalMatches);
 
                 String id = String.valueOf(championDetails.championID);
                 String updateFullUrl = couchDbUrl + "/championdetails/" + id;
@@ -54,7 +53,6 @@ public class ChampionService {
                 HttpGet getRev = new HttpGet(updateFullUrl);
                 getRev.setHeader("Authorization", "Basic " + encodedAuth);
 
-                System.out.println("Before " + getRev);
                 HttpResponse getResponse = httpClient.execute(getRev);
 
                 String currentRev = null;
@@ -79,9 +77,7 @@ public class ChampionService {
                 String json = ow.writeValueAsString(jsonNode);
                 put.setEntity(new StringEntity(json));
 
-                System.out.println("PUT -> " + updateFullUrl);
                 HttpResponse dbResponse = httpClient.execute(put);
-                System.out.println("Status: " + dbResponse.getStatusLine());
 
                 EntityUtils.consume(dbResponse.getEntity());  // również zamykaj po PUT
             }
@@ -94,7 +90,6 @@ public class ChampionService {
 
     public void countChampionDetails(String match) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            System.out.println(match);
             String fullUrl = couchDbUrl + "/detailedmatches/" + match;
 
             HttpGet get = new HttpGet(fullUrl);
@@ -103,6 +98,7 @@ public class ChampionService {
             get.setHeader("Authorization", "Basic " + encodedAuth);
 
             HttpResponse response = httpClient.execute(get);
+
             if (response.getStatusLine().getStatusCode() == 200) {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response.getEntity().getContent());
@@ -116,21 +112,26 @@ public class ChampionService {
                     ///  Znajdz championa
                     ChampionStatsMap.ChampionDetails championToModify = ChampionStatsMap.CHAMPION_MAP.get(championId);
 
+                    System.out.println("ChampionId = " + championId
+                            + " Total Matches = " + championToModify.totalMatches);
+
                     /// Policz ile było ogólem meczy
                     championToModify.totalMatches += 1;
+
                     /// Policz Won Matches
                     if (participant.get("win").asBoolean()) {
                         championToModify.wonMatches += 1;
                     }
+
+                    System.out.println("ChampionId = " + championId
+                            + " Total Matches = " + championToModify.totalMatches);
                 }
 
                 ///  Policz Ban Rate
                 JsonNode teams = root.get("info").get("teams");
-
                 for (JsonNode team : teams) {
                     JsonNode bans = team.get("bans");
                     for (JsonNode ban : bans) {
-
                         int championId = ban.get("championId").asInt();
 
                         /// Nothing banned
@@ -150,6 +151,43 @@ public class ChampionService {
         }
     }
 
+    public List<String> findMatchesWithNami() {
+        List<String> matchesWithNami = new ArrayList<>();
+
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            String auth = "admin:admin";
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
+            HttpPost post = new HttpPost(couchDbUrl + "/detailedmatches/_find");
+            post.setHeader("Authorization", "Basic " + encodedAuth);
+            post.setHeader("Content-Type", "application/json");
+
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode query = mapper.createObjectNode();
+            query.putObject("selector"); // pusty selector = wszystkie dokumenty
+
+            post.setEntity(new StringEntity(query.toString()));
+
+            HttpResponse response = httpClient.execute(post);
+            JsonNode root = mapper.readTree(response.getEntity().getContent());
+
+            for (JsonNode doc : root.path("docs")) {
+                JsonNode participants = doc.path("info").path("participants");
+                for (JsonNode participant : participants) {
+                    if (participant.path("championId").asInt() == 267) {
+                        String matchId = doc.path("_id").asText();
+                        matchesWithNami.add(matchId);
+                        break; // nie sprawdzaj kolejnych uczestników
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return matchesWithNami;
+    }
+    
     public List<ChampionDetails> getAllChampDetailsFromCouchDB() {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             String URL = couchDbUrl + "/championdetails/" + "_all_docs";
@@ -161,11 +199,9 @@ public class ChampionService {
             getChampionsDetails.setHeader("Authorization", "Basic " + encodedAuth);
             HttpResponse response = httpClient.execute(getChampionsDetails);
 
-            System.out.println("Status: " + response.getStatusLine());
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String responseBody = reader.lines().reduce("", (a, b) -> a + b);
-            System.out.println("PUT response body: " + responseBody);
 
 
             if (response.getStatusLine().getStatusCode() != 201) {

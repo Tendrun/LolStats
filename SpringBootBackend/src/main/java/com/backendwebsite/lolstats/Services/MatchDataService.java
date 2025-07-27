@@ -8,6 +8,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import static com.backendwebsite.lolstats.Constants.KeysLoader.loadSecretValue;
 import java.io.BufferedReader;
@@ -19,12 +21,13 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
+@Service
 public class MatchDataService {
 
     private final String riotGamesApiKey;
     private final String couchDbUrl;
 
-    public MatchDataService(String riotGamesApiKey, String couchDbUrl) {
+    public MatchDataService() {
         this.riotGamesApiKey = loadSecretValue("RIOTGAMES_API_KEY");
         this.couchDbUrl = loadSecretValue("COUCHDB_URL"); // e.g. http://admin:admin@localhost:5984
     }
@@ -88,14 +91,11 @@ public class MatchDataService {
             put.setEntity(new StringEntity(json));
 
             try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-                System.out.println("PUT -> " + fullUrl);
                 HttpResponse dbResponse = httpClient.execute(put);
 
-                System.out.println("Status: " + dbResponse.getStatusLine());
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(dbResponse.getEntity().getContent()));
                 String responseBody = reader.lines().reduce("", (a, b) -> a + b);
-                System.out.println("PUT response body: " + responseBody);
 
                 if (dbResponse.getStatusLine().getStatusCode() != 201 &&
                         dbResponse.getStatusLine().getStatusCode() != 202) {

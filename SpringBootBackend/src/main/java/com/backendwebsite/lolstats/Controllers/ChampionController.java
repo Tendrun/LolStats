@@ -2,6 +2,7 @@ package com.backendwebsite.lolstats.Controllers;
 
 import com.backendwebsite.lolstats.Constants.ChampionStatsMap.ChampionDetails;
 import com.backendwebsite.lolstats.Services.ChampionService;
+import com.backendwebsite.lolstats.Services.MatchDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +16,12 @@ import java.util.List;
 public class ChampionController {
 
     private final ChampionService championService;
+    private final MatchDataService matchDataService;
 
     @Autowired
-    public ChampionController(ChampionService championService) {
+    public ChampionController(ChampionService championService, MatchDataService matchDataService) {
         this.championService = championService;
+        this.matchDataService = matchDataService;
     }
 
     @GetMapping("/getChampionsFromCouchDB")
@@ -29,9 +32,16 @@ public class ChampionController {
     }
 
     @GetMapping("/updateChampionsFromRiot")
-    public ResponseEntity<List<ChampionDetails>> updateChampionsFromRiot() {
+    public ResponseEntity updateChampionsFromRiot() {
         System.out.println("I m here");
-        List<ChampionDetails> listOfChampions = championService.getAllChampDetailsFromCouchDB();
-        return ResponseEntity.ok(listOfChampions);
+        List<String> matches = matchDataService.getAllMatchesFromCouchDB();
+        for (String match : matches) championService.countChampionDetails(match);
+        championService.pushChampionDetailsToCouchDB();
+        return ResponseEntity.ok("ok");
+    }
+
+    @GetMapping("/nami-matches")
+    public List<String> getMatchesWithNami() {
+        return championService.findMatchesWithNami();
     }
 }
