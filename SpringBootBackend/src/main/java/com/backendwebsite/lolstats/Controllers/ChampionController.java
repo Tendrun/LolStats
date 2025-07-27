@@ -39,9 +39,4 @@ public class ChampionController {
         championService.pushChampionDetailsToCouchDB();
         return ResponseEntity.ok("ok");
     }
-
-    @GetMapping("/nami-matches")
-    public List<String> getMatchesWithNami() {
-        return championService.findMatchesWithNami();
-    }
 }
