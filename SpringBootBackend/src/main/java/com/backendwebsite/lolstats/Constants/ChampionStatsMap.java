@@ -10,6 +10,10 @@ public class ChampionStatsMap {
 
     public static final Map<Integer, ChampionDetails> CHAMPION_MAP;
 
+    public static int ALL_MATCHES_PLAYED = 0;
+    public static int ALL_BAN_COUNT = 0;
+
+
     static {
         CHAMPION_MAP_INTERNAL.put(266, new ChampionDetails(266, "Aatrox"));
         CHAMPION_MAP_INTERNAL.put(103, new ChampionDetails(103, "Ahri"));

@@ -26,7 +26,6 @@ public class ChampionController {
 
     @GetMapping("/getChampionsFromCouchDB")
     public ResponseEntity<List<ChampionDetails>> getChampionsFromCouchDB() {
-        System.out.println("I m here");
         List<ChampionDetails> listOfChampions = championService.getAllChampDetailsFromCouchDB();
         return ResponseEntity.ok(listOfChampions);
     }

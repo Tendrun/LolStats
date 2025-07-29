@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.backendwebsite.lolstats.Constants.ChampionStatsMap.ALL_BAN_COUNT;
+import static com.backendwebsite.lolstats.Constants.ChampionStatsMap.ALL_MATCHES_PLAYED;
 import static com.backendwebsite.lolstats.Constants.KeysLoader.loadSecretValue;
 
 @Service
@@ -91,6 +93,9 @@ public class ChampionService {
 
     public void countChampionDetails(String match) {
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            /// Policz jeden mecz
+            ALL_MATCHES_PLAYED += 1;
+
             String fullUrl = couchDbUrl + "/detailedmatches/" + match;
 
             HttpGet get = new HttpGet(fullUrl);
@@ -124,11 +129,19 @@ public class ChampionService {
                     }
                 }
 
+                /// Policz Win Rate
+                for (ChampionDetails champion : ChampionStatsMap.CHAMPION_MAP.values()) {
+                    if(champion.wonMatches == 0 || champion.totalMatchesPicked == 0)
+                        champion.winRate = (float)champion.wonMatches / champion.totalMatchesPicked;
+                }
+
                 ///  Policz Ban Rate
                 JsonNode teams = root.get("info").get("teams");
                 for (JsonNode team : teams) {
                     JsonNode bans = team.get("bans");
                     for (JsonNode ban : bans) {
+                        /// Policz jednego bana
+                        ALL_BAN_COUNT += 1;
 
                         ///  Wez ChamponId z jsona
                         int championId = ban.get("championId").asInt();
@@ -145,6 +158,16 @@ public class ChampionService {
                         championToModify.bannedMatches += 1;
                     }
                 }
+
+                /// Policz Ban Rate
+                for (ChampionDetails champion : ChampionStatsMap.CHAMPION_MAP.values()) {
+                    if(champion.wonMatches == 0 || champion.totalMatchesPicked == 0)
+                        champion.banRate = (float)champion.banRate / ALL_BAN_COUNT;
+                }
+
+
+                /// Policz Pick Rate
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,7 +203,6 @@ public class ChampionService {
             for (JsonNode row : rows) {
                 JsonNode doc = row.get("doc");
 
-                System.out.println("doc = " + doc);
                 int championID = doc.get("_id").asInt();
                 String championName = doc.get("championName").asText();
                 float winRate = doc.get("winRate").floatValue();
@@ -193,13 +215,11 @@ public class ChampionService {
                 ChampionDetails championDetails = new ChampionDetails(championID, championName, winRate, banRate,
                         pickRate, totalMatchesPicked, wonMatches, bannedMatches);
                 championDetailsList.add(championDetails);
-                System.out.println("row = " + row);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         return championDetailsList;
-
     }
 }
