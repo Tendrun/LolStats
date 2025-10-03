@@ -1,4 +1,4 @@
-package com.backendwebsite.lolstats.Database.Models;
+package com.backendwebsite.lolstats.DTOs;
 
 import java.util.List;
 

@@ -1,15 +1,33 @@
 version: '3'
 services:
   couchdb:
-    image: couchdb:latest
+    image: couchdb:3.5.0
     container_name: couchdb
     ports:
       - "5984:5984"
     environment:
-      - COUCHDB_USER=admin
-      - COUCHDB_PASSWORD=admin
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: admin
     volumes:
       - couchdb_data:/opt/couchdb/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://admin:admin@localhost:5984/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  couchdb-init:
+    image: curlimages/curl:8.16.0
+    depends_on:
+      - couchdb
+    volumes:
+      - ./init-couchdb.sh:/init-couchdb.sh:ro
+    environment:
+      COUCH_URL: http://couchdb:5984
+      COUCH_USER: admin
+      COUCH_PASSWORD: admin
+    entrypoint: ["/bin/sh","/init-couchdb.sh"]
+    restart: "no"
 
 volumes:
   couchdb_data:

@@ -1,6 +1,6 @@
 package com.backendwebsite.lolstats.Services;
 
-import com.backendwebsite.lolstats.Database.Models.LeagueEntryDTO;
+import com.backendwebsite.lolstats.DTOs.LeagueEntryDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
@@ -9,7 +9,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;

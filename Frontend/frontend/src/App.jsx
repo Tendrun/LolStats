@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./Components/Navbar";
-import Champions from "./pages/ChampionsList/ChampionsList.jsx";
-import ChampionDetail from "./Components/ChampionDetail.jsx";
-import ChampionTable from "./pages/ChampionsList/ChampionTable.jsx";
+import Navbar from "./components/Navbar.jsx";
+import Champions from "./pages/championsList/ChampionsList.jsx";
+import ChampionDetail from "./components/ChampionDetail.jsx";
+import ChampionTable from "./pages/championsList/ChampionTable.jsx";
 
 
 function App() {

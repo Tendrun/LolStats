@@ -1,4 +1,4 @@
-package com.backendwebsite.lolstats.Database;
+package com.backendwebsite.lolstats.CouchDB;
 
 import com.backendwebsite.lolstats.Services.ChampionService;
 import com.backendwebsite.lolstats.Services.MatchDataService;
