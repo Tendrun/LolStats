@@ -1,7 +1,7 @@
-package com.backendwebsite.DatabaseBuilder.Builder;
+package com.backendwebsite.DatabaseBuilder.Step.Players;
 
-import com.backendwebsite.DatabaseBuilder.Factory.CommunicationFactory;
 import com.backendwebsite.DatabaseBuilder.Helper.DatabaseHelper;
+import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
@@ -15,22 +15,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.UUID;
 
-public class GetPlayersBuilder implements IBuilder{
-
-    CommunicationFactory communicationFactory;
-
-    public GetPlayersBuilder(CommunicationFactory communicationFactory){
-        this.communicationFactory = communicationFactory;
-    }
+public class FetchPlayersStep implements IStep {
 
     @Override
-    public void build() {
-        getPlayersFromRiot("BRONZE","IV", "RANKED_SOLO_5x5");
-    }
+    public void execute() {
 
-    @Override
-    public Object getResult() {
-        return null;
     }
 
     public void getPlayersFromRiot(String tier, String division, String queue) {
