@@ -61,3 +61,9 @@
   justify-content: center;
   width: 100%;
 }
+
+.champion-table th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}

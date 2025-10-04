@@ -1,35 +1,24 @@
-import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
-import Champions from "./pages/championsList/ChampionsList.jsx";
-import ChampionDetail from "./components/ChampionDetail.jsx";
-import ChampionTable from "./pages/championsList/ChampionTable.jsx";
+import Navbar from "./Components/Navbar";
+import Champions from "./pages/ChampionsList/ChampionsList.jsx";
+import { useEffect, useState } from "react";
 
 
 function App() {
-  const [champions, setChampions] = useState([]);
-
-  useEffect(() => {
-    fetch("/champions.json")
-      .then((res) => res.json())
-      .then((data) => setChampions(data))
-      .catch((err) => console.error("Error loading champions:", err));
-  }, []);
-
   return (
-    <Router>
-      <Navbar />
-      <div className="main-content">
-        <div className="content-container">
-          <Routes>
-            <Route path="/" element={<ChampionTable />} />
-            <Route path="/champions" element={<Champions champions={champions} />} />
-            <Route path="/champions/:championName" element={<ChampionDetail champions={champions} />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
+  <Router>
+  <Navbar /> {/* This is always on top */}
+  <div className="main-content">
+    <div className="content-container">
+      <Routes>
+        <Route path="/champions" element={<Champions />} />
+        {/* Add other routes here */}
+      </Routes>
+    </div>
+  </div>
+</Router>
+
   );
 }
 
-export default App;
+export default App
