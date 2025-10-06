@@ -1,6 +1,6 @@
 package com.backendwebsite.DatabaseBuilder.Controller;
 
-import com.backendwebsite.DatabaseBuilder.Director.DatabaseDirector;
+import com.backendwebsite.DatabaseBuilder.Director.MatchDatabaseDirector;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,18 +11,18 @@ import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
 @RequestMapping("api/database")
 public class DatabaseController {
 
-    private final DatabaseDirector databaseDirector;
+    private final MatchDatabaseDirector matchDatabaseDirector;
 
-    public DatabaseController(DatabaseDirector databaseDirector) { this.databaseDirector = databaseDirector; }
+    public DatabaseController(MatchDatabaseDirector matchDatabaseDirector) { this.matchDatabaseDirector = matchDatabaseDirector; }
 
 
     @GetMapping("/getChampions")
     public ResponseEntity getChampions() {
 
-        BuildMatchContext context = new BuildMatchContext("eun1", "I", "BRONZE",
+        BuildMatchContext context = new BuildMatchContext("eun1", "BRONZE", "IV",
                 "RANKED_SOLO_5x5");
 
-        databaseDirector.startWork(context);
+        matchDatabaseDirector.startWork(context);
 
         return ResponseEntity.ok("");
     }

@@ -7,18 +7,30 @@ import com.backendwebsite.DatabaseBuilder.Step.Players.DeduplicatePlayersStep;
 import com.backendwebsite.DatabaseBuilder.Step.Players.FetchPlayersStep;
 import com.backendwebsite.DatabaseBuilder.Step.Players.UpsertPlayersStep;
 import com.backendwebsite.DatabaseBuilder.Step.Players.ValidatePlayersStep;
+import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
-public class GetPlayersBuilder implements IBuilder<BuildMatchContext> {
+public class GetPlayersBuilder implements IBuilder<BuildMatchContext, Object> {
 
-    private final List<IStep<BuildMatchContext>> steps;
+    private final StepsOrder<BuildMatchContext> steps;
 
     public GetPlayersBuilder(DeduplicatePlayersStep deduplicatePlayersStep, FetchPlayersStep fetchPlayersStep,
                              ValidatePlayersStep validatePlayersStep, UpsertPlayersStep upsertPlayersStep) {
-        this.steps = List.of(fetchPlayersStep, validatePlayersStep ,deduplicatePlayersStep, upsertPlayersStep);
+
+        Map<Integer, IStep<BuildMatchContext>> map = new LinkedHashMap<>();
+
+        map.put(1, fetchPlayersStep);
+        map.put(2, validatePlayersStep);
+        map.put(3, deduplicatePlayersStep);
+        map.put(4, upsertPlayersStep);
+
+        this.steps = new StepsOrder<>(map);
     }
 
     @Override

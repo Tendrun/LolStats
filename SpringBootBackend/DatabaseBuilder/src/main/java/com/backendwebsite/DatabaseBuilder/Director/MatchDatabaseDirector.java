@@ -5,9 +5,9 @@ import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DatabaseDirector {
+public class MatchDatabaseDirector {
     private final GetPlayersBuilder playersBuilder;
-    public DatabaseDirector(GetPlayersBuilder playersBuilder) { this.playersBuilder = playersBuilder; }
+    public MatchDatabaseDirector(GetPlayersBuilder playersBuilder) { this.playersBuilder = playersBuilder; }
     public void startWork(BuildMatchContext context) {
         playersBuilder.build(context);
     }
