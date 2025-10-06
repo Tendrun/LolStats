@@ -1,5 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Step;
 
-public interface IStep {
-    void execute();
+import com.backendwebsite.DatabaseBuilder.Context.IContext;
+
+public interface IStep<T extends IContext> {
+    void execute(T context);
 }

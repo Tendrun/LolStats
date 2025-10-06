@@ -1,5 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Builder;
 
+import com.backendwebsite.DatabaseBuilder.Context.IContext;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.http.HttpClient;
@@ -8,7 +10,7 @@ import java.util.Base64;
 public class MatchDataBuilder implements IBuilder {
 
     @Override
-    public void build() {
+    public void build(IContext context) {
         throw new RuntimeException();
     }
 /*
