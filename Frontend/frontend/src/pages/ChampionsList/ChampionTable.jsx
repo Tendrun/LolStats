@@ -1,7 +1,9 @@
 import { useState } from "react";
 import './ChampionTable.css';
+import { Navigate, useNavigate } from "react-router-dom";
 
 export default function ChampionTable({ champions }) {
+  const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const sortedChampions = [...champions].sort((a, b) => {
@@ -54,11 +56,14 @@ export default function ChampionTable({ champions }) {
       </thead>
         <tbody>
           {sortedChampions.map((champ, idx) => (
-            <tr key={idx}>
+            <tr key={idx}
+            onClick={() => navigate(`/championDetail/${champ.name}`)}
+            style={{ cursor: "pointer" }}
+            >
               <td>{idx + 1}</td>
               <td>
                 <img
-                  src={`/ChampionIcons/${champ.image}`}
+                  src={`./src/assets/ChampionIcons/${champ.image}`}
                   alt={champ.name}
                   className="champion-icon"
                 />
