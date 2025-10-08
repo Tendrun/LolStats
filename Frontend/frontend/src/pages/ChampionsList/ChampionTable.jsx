@@ -63,7 +63,7 @@ export default function ChampionTable({ champions }) {
               <td>{idx + 1}</td>
               <td>
                 <img
-                  src={`./src/assets/ChampionIcons/${champ.image}`}
+                  src={`./src/assets/championIcons/${champ.image}`}
                   alt={champ.name}
                   className="champion-icon"
                 />
