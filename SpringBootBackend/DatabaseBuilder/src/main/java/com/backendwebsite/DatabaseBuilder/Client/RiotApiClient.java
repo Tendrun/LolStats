@@ -1,30 +1,22 @@
 package com.backendwebsite.DatabaseBuilder.Client;
 
-import com.backendwebsite.DatabaseBuilder.Exception.RiotApiException;
 import com.backendwebsite.DatabaseBuilder.Factory.CommunicationFactory;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import com.backendwebsite.DatabaseBuilder.Step.StepsOrder.RequestStatus;
 
-import java.io.IOException;
+
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 
 @Component
 public class RiotApiClient {
-
-    private static final Logger log = LoggerFactory.getLogger(RiotApiClient.class);
-
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
     private final CommunicationFactory communicationFactory;
+
+    public record Response(RequestStatus status, JsonNode body) { }
 
     public RiotApiClient(ObjectMapper mapper,
                          CommunicationFactory communicationFactory) {
@@ -33,54 +25,29 @@ public class RiotApiClient {
         this.communicationFactory = communicationFactory;
     }
 
-    public <T> T getJson(String urn, String region, TypeReference<T> typeRef) {
+    public Response sendRequest(String urn, String region) {
         HttpRequest request = communicationFactory.createRequest(urn, region);
 
         try {
             var response = httpClient.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            int statusCode = response.statusCode();
+            JsonNode body = mapper.readTree(response.body());
 
-            int code = response.statusCode();
-            if (code == 429) {
-                throw new RiotApiException("Rate limited (429) by Riot API");
+            if (statusCode == 201) {
+                System.out.println("CouchDB: Document saved successfully.");
+                return new Response(RequestStatus.SUCCESSFUL, body);
             }
-            if (code < 200 || code >= 300) {
-                throw new RiotApiException("Riot API error: " + code + " body=" + safeTrim(response.body()));
+            else if (statusCode == 409) {
+                System.out.println("CouchDB: Document already exists — skipped.");
+                return new Response(RequestStatus.SKIPPED, body);
             }
-
-            return mapper.readValue(response.body(), typeRef);
-
-        } catch (IOException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RiotApiException("HTTP/IO error calling Riot API", e);
+            else {
+                System.err.println("CouchDB request failed with status: " + statusCode);
+                return new Response(RequestStatus.FAILED, body);
+            }
+        } catch (Exception e) {
+            System.err.println("Unknown error" + e.getMessage());
+            return new Response(RequestStatus.FAILED, null);
         }
-    }
-
-    /** Pomocnicze: oczekujesz tablicy JSON -> ArrayNode */
-    public ArrayNode getArray(String urn, String region) {
-        HttpRequest request = communicationFactory.createRequest(urn, region);
-
-        try {
-            var response = httpClient.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
-
-            int code = response.statusCode();
-            if (code < 200 || code >= 300) {
-                throw new RiotApiException("Riot API error: " + code + " body=" + safeTrim(response.body()));
-            }
-
-            JsonNode node = mapper.readTree(response.body());
-            if (!node.isArray()) {
-                throw new RiotApiException("Expected JSON array but got: " + node.getNodeType());
-            }
-            return (ArrayNode) node;
-
-        } catch (IOException | InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RiotApiException("HTTP/IO error calling Riot API", e);
-        }
-    }
-
-    private static String safeTrim(String s) {
-        if (s == null) return "";
-        return s.length() > 500 ? s.substring(0, 500) + "...(trimmed)" : s;
     }
 }

@@ -39,6 +39,12 @@ public final class StepsOrder<C extends IContext> {
         failed.clear();
     }
 
+    public enum RequestStatus {
+        SUCCESSFUL,
+        SKIPPED,
+        FAILED
+    }
+
     public static final class Success {
         private final String entityId;
         public Success(String entityId) { this.entityId = entityId; }

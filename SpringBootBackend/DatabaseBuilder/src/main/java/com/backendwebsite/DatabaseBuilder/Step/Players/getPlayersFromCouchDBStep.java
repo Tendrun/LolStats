@@ -16,7 +16,7 @@ import java.util.List;
 public class getPlayersFromCouchDBStep implements IStep<BuildPlayerContext> {
     @Override
     public void execute(BuildPlayerContext context) {
-        
+        /*
         List<LeagueEntryDTO> players = new ArrayList<>();
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -44,6 +44,6 @@ public class getPlayersFromCouchDBStep implements IStep<BuildPlayerContext> {
             e.printStackTrace();
         }
 
-        return players;
-    }*/
+        return players;*/
+    }
 }
