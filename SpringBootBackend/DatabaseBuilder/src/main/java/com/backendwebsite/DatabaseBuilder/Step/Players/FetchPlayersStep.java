@@ -1,7 +1,6 @@
 package com.backendwebsite.DatabaseBuilder.Step.Players;
 
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
-import com.backendwebsite.DatabaseBuilder.Context.IContext;
+import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
 import com.backendwebsite.DatabaseBuilder.Factory.CommunicationFactory;
 import com.backendwebsite.DatabaseBuilder.Helper.DatabaseHelper;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
@@ -20,7 +19,7 @@ import java.net.http.HttpRequest;
 import java.util.UUID;
 
 @Component
-public class FetchPlayersStep implements IStep<BuildMatchContext> {
+public class FetchPlayersStep implements IStep<BuildPlayerContext> {
 
     private final CommunicationFactory communicationFactory;
 
@@ -29,18 +28,18 @@ public class FetchPlayersStep implements IStep<BuildMatchContext> {
     }
     
     @Override
-    public void execute(BuildMatchContext context) {
+    public void execute(BuildPlayerContext context) {
         getPlayersFromRiot(context);
     }
 
-    public void getPlayersFromRiot(BuildMatchContext context) {
-        String urnRiot = "/lol/league/v4/entries/" + context.getQueue() + "/" + context.getTier() + "/" +
-                context.getDivision() + "?page=1";
+    public void getPlayersFromRiot(BuildPlayerContext context) {
+        String urnRiot = "/lol/league/v4/entries/" + context.queue + "/" + context.tier + "/" +
+                context.division + "?page=" + context.page;
 
         System.out.println(urnRiot);
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = communicationFactory.createRequest(urnRiot, context.getRegion());
+        HttpClient client = communicationFactory.createHttpClient();
+        HttpRequest request = communicationFactory.createRequest(urnRiot, context.region);
 
         try {
             java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
@@ -56,7 +55,7 @@ public class FetchPlayersStep implements IStep<BuildMatchContext> {
                 return;
             }
 
-            try (CloseableHttpClient httpClient = communicationFactory.createClient(context.getRegion())) {
+            try (CloseableHttpClient httpClient = communicationFactory.createCloseableHttpClient(context.region)) {
                 for (JsonNode match : root) {
 
                     //TO DO
@@ -65,7 +64,7 @@ public class FetchPlayersStep implements IStep<BuildMatchContext> {
                     String json = match.toString();
                     String urnCouchDB = "/players/" + id;
 
-                    HttpPut put = communicationFactory.createHttpPut(urnCouchDB, context.getRegion());
+                    HttpPut put = communicationFactory.createHttpPut(urnCouchDB, context.region);
                     put.setEntity(new StringEntity(json));
 
                     HttpResponse dbResponse = httpClient.execute(put);

@@ -1,28 +1,34 @@
 package com.backendwebsite.DatabaseBuilder.Controller;
 
-import com.backendwebsite.DatabaseBuilder.Director.MatchDatabaseDirector;
+import com.backendwebsite.DatabaseBuilder.DTO.getPlayers.getPlayersRequest;
+import com.backendwebsite.DatabaseBuilder.Director.PlayersDirector;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
 
 @RestController
 @RequestMapping("api/database")
 public class DatabaseController {
 
-    private final MatchDatabaseDirector matchDatabaseDirector;
+    private final PlayersDirector playersDirector;
 
-    public DatabaseController(MatchDatabaseDirector matchDatabaseDirector) { this.matchDatabaseDirector = matchDatabaseDirector; }
+    public DatabaseController(PlayersDirector playersDirector) { this.playersDirector = playersDirector; }
 
 
-    @GetMapping("/getChampions")
-    public ResponseEntity getChampions() {
+    @GetMapping("/getPlayers")
+    public ResponseEntity getPlayers(@RequestBody getPlayersRequest req) {
 
-        BuildMatchContext context = new BuildMatchContext("eun1", "BRONZE", "IV",
-                "RANKED_SOLO_5x5");
+        BuildPlayerContext context = new BuildPlayerContext(
+                req.region,
+                req.tier,
+                req.division,
+                req.queue,
+                req.page);
 
-        matchDatabaseDirector.startWork(context);
+        playersDirector.startWork(context);
 
         return ResponseEntity.ok("");
     }

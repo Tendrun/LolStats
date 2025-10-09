@@ -1,15 +1,13 @@
 package com.backendwebsite.DatabaseBuilder.Step;
 
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
 import com.backendwebsite.DatabaseBuilder.Context.IContext;
 
 import java.util.*;
 
 public final class StepsOrder<C extends IContext> {
-    private final LinkedHashMap<Integer, IStep<C>> steps;
+    public final LinkedHashMap<Integer, IStep<C>> steps;
     private final Map<Integer, List<Success>> succeeded = new LinkedHashMap<>();
     private final Map<Integer, List<Failure>> failed = new LinkedHashMap<>();
-
     public StepsOrder(Map<Integer, IStep<C>> steps) {
         this.steps = new LinkedHashMap<>(steps);
     }

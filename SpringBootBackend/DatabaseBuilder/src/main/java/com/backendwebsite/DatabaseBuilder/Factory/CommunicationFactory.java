@@ -7,6 +7,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.Base64;
 
@@ -34,8 +35,13 @@ public class CommunicationFactory {
         return request.create(apiRiotGamesKey, uri);
     }
 
-    public CloseableHttpClient createClient(String region) {
+    public CloseableHttpClient createCloseableHttpClient(String region) {
         CloseableHttpClient httpClient = HttpClients.createDefault();
+        return httpClient;
+    }
+
+    public HttpClient createHttpClient() {
+        HttpClient httpClient = HttpClient.newHttpClient();
         return httpClient;
     }
 

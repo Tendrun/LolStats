@@ -18,7 +18,7 @@ const RUNESMAPPING: Record<number, rune> = {
   9104: { id: 9104, name: "Legend: Alacrity", src: "/src/assets/runes/Styles/Precision/LegendAlacrity/LegendAlacrity.png" },
   9105: { id: 9105, name: "Legend: Haste", src: "/src/assets/runes/Styles/Precision/LegendHaste/LegendHaste.png" },
   9111: { id: 9111, name: "Triumph", src: "/src/assets/runes/Styles/Precision/Triumph.png" },
-  8299: { id: 8299, name: "Last Stand", src: "/src/assets/runes/Styles/Sorcery/LastStand/LastStand.png" },
+  8299: { id: 8299, name: "Last Stand", src: "/src/assets/runes/Styles/Precision/LastStand/LastStand.png" },
 
   // =========================
   // 💀 DOMINATION
@@ -59,8 +59,7 @@ const RUNESMAPPING: Record<number, rune> = {
   // 🛡️ RESOLVE
   // =========================
   7204: { id: 7204, name: "Resolve", src: "/src/assets/runes/Styles/7204_Resolve.png" },
-  8401: { id: 8401, name: "Shield Bash", src: "/src/assets/runes/Styles/Resolve/Chrysalis/Chrysalis.png" },
-  8410: { id: 8410, name: "Approach Velocity", src: "/src/assets/runes/Styles/Resolve/ApproachVelocity/ApproachVelocity.png" },
+  8401: { id: 8401, name: "Shield Bash", src: "/src/assets/runes/Styles/Resolve/Shield Bash/Shield Bash.png" },
   8429: { id: 8429, name: "Conditioning", src: "/src/assets/runes/Styles/Resolve/Conditioning/Conditioning.png" },
   8437: { id: 8437, name: "Grasp of the Undying", src: "/src/assets/runes/Styles/Resolve/GraspOfTheUndying/GraspOfTheUndying.png" },
   8439: { id: 8439, name: "Aftershock", src: "/src/assets/runes/Styles/Resolve/VeteranAftershock/VeteranAftershock.png" },
@@ -75,8 +74,9 @@ const RUNESMAPPING: Record<number, rune> = {
   // =========================
   // 💡 INSPIRATION
   // =========================
-  7203: { id: 7203, name: "Whimsy", src: "/src/assets/runes/Styles/7203_Whimsy.png" },
+  7203: { id: 7203, name: "Inspiration", src: "/src/assets/runes/Styles/7203_Inspiration.png" },
   8304: { id: 8304, name: "Magical Footwear", src: "/src/assets/runes/Styles/Inspiration/MagicalFootwear/MagicalFootwear.png" },
+  8410: { id: 8410, name: "Approach Velocity", src: "/src/assets/runes/Styles/Inspiration/ApproachVelocity/ApproachVelocity.png" },
   8313: { id: 8313, name: "Triple Tonic", src: "/src/assets/runes/Styles/Inspiration/PerfectTiming/AlchemistCabinet.png" },
   8316: { id: 8316, name: "Jack Of All Trades", src: "/src/assets/runes/Styles/Inspiration/JackOfAllTrades/JackofAllTrades2.png" },
   8321: { id: 8321, name: "Cash Back", src: "/src/assets/runes/Styles/Inspiration/CashBack/CashBack2.png" },
@@ -86,13 +86,15 @@ const RUNESMAPPING: Record<number, rune> = {
   8352: { id: 8352, name: "Time Warp Tonic", src: "/src/assets/runes/Styles/Inspiration/TimeWarpTonic/TimeWarpTonic.png" },
   8360: { id: 8360, name: "Unsealed Spellbook", src: "/src/assets/runes/Styles/Inspiration/UnsealedSpellbook/UnsealedSpellbook.png" },
   8369: { id: 8369, name: "First Strike", src: "/src/assets/runes/Styles/Inspiration/FirstStrike/FirstStrike.png" },
+  8306: { id: 8369, name: "Hextech Flashtraption", src: "/src/assets/runes/Styles/Inspiration/HextechFlashtraption/HextechFlashtraption.png" },
+
 
   // =========================
   // ⚙️ STAT MODS
   // =========================
   5001: { id: 5001, name: "Health Scaling", src: "/src/assets/runes/StatMods/StatModsHealthScalingIcon.png" },
   5005: { id: 5005, name: "Attack Speed", src: "/src/assets/runes/StatMods/StatModsAttackSpeedIcon.png" },
-  5007: { id: 5007, name: "CDR Scaling", src: "/src/assets/runes/StatMods/StatModsCDRScalingIcon.png" },
+  5007: { id: 5007, name: "CDR", src: "/src/assets/runes/StatMods/StatModsCDRIcon.png" },
   5008: { id: 5008, name: "Adaptive Force", src: "/src/assets/runes/StatMods/StatModsAdaptiveForceIcon.png" },
   5010: { id: 5010, name: "Movement Speed", src: "/src/assets/runes/StatMods/StatModsMovementSpeedIcon.png" },
   5011: { id: 5011, name: "Health", src: "/src/assets/runes/StatMods/StatModsHealthPlusIcon.png" },
@@ -115,6 +117,7 @@ export enum runeCategory {
 }
 
 export enum runeSubCategory {
+  Icon = "Icon",
   Primary = "Primary",
   Secondary = "Secondary",
   StatRunes = "Stat Runes",
@@ -126,107 +129,130 @@ export const RUNESCATEGORIES: Record<
   Record<runeSubCategory, rune[]> 
   > = {
   [runeCategory.Precision]: {
+    [runeSubCategory.Icon]: [RUNESMAPPING[7201]],
+
     [runeSubCategory.Primary]: [
-      RUNESMAPPING[7201],
       RUNESMAPPING[8005],
       RUNESMAPPING[8008],
+      RUNESMAPPING[8021],
       RUNESMAPPING[8010],
     ],
     [runeSubCategory.Secondary]: [
-      RUNESMAPPING[8009],
       RUNESMAPPING[9101],
-      RUNESMAPPING[9103],
+      RUNESMAPPING[9111],
+      RUNESMAPPING[8009],
       RUNESMAPPING[9104],
       RUNESMAPPING[9105],
-      RUNESMAPPING[9111],
+      RUNESMAPPING[9103],      
+      RUNESMAPPING[8014],
+      RUNESMAPPING[8017],
       RUNESMAPPING[8299],
     ],
     [runeSubCategory.StatRunes]: [],
   },
 
   [runeCategory.Domination]: {
+    [runeSubCategory.Icon]: [RUNESMAPPING[7200]],
+
     [runeSubCategory.Primary]: [
-      RUNESMAPPING[7200],
       RUNESMAPPING[8112],
-      RUNESMAPPING[8126],
       RUNESMAPPING[8128],
-      RUNESMAPPING[8135],
+      RUNESMAPPING[9923],
     ],
     [runeSubCategory.Secondary]: [
+      RUNESMAPPING[8126],
       RUNESMAPPING[8139],
+      RUNESMAPPING[8143],
+      RUNESMAPPING[8137],
       RUNESMAPPING[8140],
       RUNESMAPPING[8141],
-      RUNESMAPPING[8143],
+      RUNESMAPPING[8135],
       RUNESMAPPING[8105],
       RUNESMAPPING[8106],
-      RUNESMAPPING[9923],
     ],
     [runeSubCategory.StatRunes]: [],
   },
 
   [runeCategory.Sorcery]: {
+    [runeSubCategory.Icon]: [RUNESMAPPING[7202]],
+
     [runeSubCategory.Primary]: [
-      RUNESMAPPING[7202],
       RUNESMAPPING[8214],
       RUNESMAPPING[8229],
       RUNESMAPPING[8230],
     ],
     [runeSubCategory.Secondary]: [
-      RUNESMAPPING[8210],
+      RUNESMAPPING[8224],
       RUNESMAPPING[8226],
+      RUNESMAPPING[8275],
+      RUNESMAPPING[8210],
       RUNESMAPPING[8234],
-      RUNESMAPPING[8236],
+      RUNESMAPPING[8233],
       RUNESMAPPING[8237],
+      RUNESMAPPING[8232],
+      RUNESMAPPING[8236],
     ],
     [runeSubCategory.StatRunes]: [],
   },
 
   [runeCategory.Resolve]: {
+    [runeSubCategory.Icon]: [RUNESMAPPING[7204]],
+
     [runeSubCategory.Primary]: [
-      RUNESMAPPING[7204],
       RUNESMAPPING[8437],
       RUNESMAPPING[8439],
       RUNESMAPPING[8465],
     ],
     [runeSubCategory.Secondary]: [
+      RUNESMAPPING[8446],
+      RUNESMAPPING[8463],
+      RUNESMAPPING[8401],
       RUNESMAPPING[8429],
       RUNESMAPPING[8444],
-      RUNESMAPPING[8453],
       RUNESMAPPING[8473],
+      RUNESMAPPING[8451],
+      RUNESMAPPING[8453],
+      RUNESMAPPING[8242],
     ],
     [runeSubCategory.StatRunes]: [],
   },
 
   [runeCategory.Inspiration]: {
+    [runeSubCategory.Icon]: [RUNESMAPPING[7203]],
+
     [runeSubCategory.Primary]: [
-      RUNESMAPPING[7203],
       RUNESMAPPING[8351],
       RUNESMAPPING[8360],
       RUNESMAPPING[8369],
     ],
     [runeSubCategory.Secondary]: [
+      RUNESMAPPING[8306],
       RUNESMAPPING[8304],
-      RUNESMAPPING[8313],
-      RUNESMAPPING[8316],
       RUNESMAPPING[8321],
+      RUNESMAPPING[8313],
+      RUNESMAPPING[8352],
       RUNESMAPPING[8345],
       RUNESMAPPING[8347],
-      RUNESMAPPING[8352],
+      RUNESMAPPING[8410],
+      RUNESMAPPING[8316],
     ],
     [runeSubCategory.StatRunes]: [],
   },
 
   [runeCategory.StatMods]: {
+    [runeSubCategory.Icon]: [],
     [runeSubCategory.Primary]: [],
     [runeSubCategory.Secondary]: [],
     [runeSubCategory.StatRunes]: [
-      RUNESMAPPING[5001],
+      RUNESMAPPING[5008],
       RUNESMAPPING[5005],
       RUNESMAPPING[5007],
       RUNESMAPPING[5008],
       RUNESMAPPING[5010],
+      RUNESMAPPING[5001],
       RUNESMAPPING[5011],
       RUNESMAPPING[5013],
+      RUNESMAPPING[5001],
     ],
   },
 };
