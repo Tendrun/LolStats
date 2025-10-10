@@ -1,6 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Factory;
 
 import com.backendwebsite.DatabaseBuilder.Factory.Request.IRequest;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -26,6 +27,9 @@ public class CommunicationFactory {
         this.couchDbUrl = loadSecretValue("COUCHDB_URL");
     }
 
+    ///
+    /// RIOT API Requests
+    ///
     public HttpRequest createRequest(String urn, String region) {
         String uri = "https://" + region + ".api.riotgames.com" + urn;
         System.out.println(uri);
@@ -35,7 +39,10 @@ public class CommunicationFactory {
         return request.create(apiRiotGamesKey, uri);
     }
 
-    public CloseableHttpClient createCloseableHttpClient(String region) {
+    ///
+    /// Clients
+    ///
+    public CloseableHttpClient createCloseableHttpClient() {
         CloseableHttpClient httpClient = HttpClients.createDefault();
         return httpClient;
     }
@@ -45,14 +52,30 @@ public class CommunicationFactory {
         return httpClient;
     }
 
-    public HttpPut createHttpPut(String urn, String region) {
+    ///
+    /// CouchDB Requests
+    ///
+    public HttpPut createHttpPut(String urn) {
         HttpPut put = new HttpPut(couchDbUrl + urn);
+        String encodedAuth = getEncodedAuth();
         put.setHeader("Content-type", "application/json");
-        String auth = "admin:admin"; // lub z pliku
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
         put.setHeader("Authorization", "Basic " + encodedAuth);
 
         return put;
+    }
+
+    public HttpGet createHttpGet(String urn) {
+        HttpGet get = new HttpGet(couchDbUrl + urn);
+        String encodedAuth = getEncodedAuth();
+        get.setHeader("Content-type", "application/json");
+        get.setHeader("Authorization", "Basic " + encodedAuth);
+
+        return get;
+    }
+
+    String getEncodedAuth(){
+        String auth = "admin:admin";
+        return Base64.getEncoder().encodeToString(auth.getBytes());
     }
 
     static class Request implements IRequest {

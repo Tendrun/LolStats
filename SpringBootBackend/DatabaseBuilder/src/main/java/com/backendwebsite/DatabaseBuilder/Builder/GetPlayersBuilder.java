@@ -3,10 +3,7 @@ package com.backendwebsite.DatabaseBuilder.Builder;
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
 import com.backendwebsite.DatabaseBuilder.Pipeline.Pipeline;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
-import com.backendwebsite.DatabaseBuilder.Step.Players.DeduplicatePlayersStep;
-import com.backendwebsite.DatabaseBuilder.Step.Players.FetchPlayersStep;
-import com.backendwebsite.DatabaseBuilder.Step.Players.UpsertPlayersStep;
-import com.backendwebsite.DatabaseBuilder.Step.Players.ValidatePlayersStep;
+import com.backendwebsite.DatabaseBuilder.Step.Players.*;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import org.springframework.stereotype.Component;
 
@@ -18,15 +15,18 @@ public class GetPlayersBuilder implements IBuilder<BuildPlayerContext, Object> {
 
     private final StepsOrder<BuildPlayerContext> steps;
 
-    public GetPlayersBuilder(DeduplicatePlayersStep deduplicatePlayersStep, FetchPlayersStep fetchPlayersStep,
-                             ValidatePlayersStep validatePlayersStep, UpsertPlayersStep upsertPlayersStep) {
+    public GetPlayersBuilder(GetPlayersFromCouchDBStep getPlayersFromCouchDBStep, DeduplicatePlayersStep deduplicatePlayersStep,
+                             FetchPlayersStep fetchPlayersStep, ValidatePlayersStep validatePlayersStep,
+                             UpsertPlayersStep upsertPlayersStep) {
 
         Map<Integer, IStep<BuildPlayerContext>> map = new LinkedHashMap<>();
 
-        map.put(1, fetchPlayersStep);
-        map.put(2, validatePlayersStep);
-        map.put(3, deduplicatePlayersStep);
-        map.put(4, upsertPlayersStep);
+        map.put(1, getPlayersFromCouchDBStep);
+        map.put(2, fetchPlayersStep);
+        map.put(3, validatePlayersStep);
+        map.put(4, deduplicatePlayersStep);
+        map.put(5, upsertPlayersStep);
+
 
         this.steps = new StepsOrder<>(map);
     }

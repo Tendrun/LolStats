@@ -15,7 +15,7 @@ public class CouchDbService {
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private final String dbUrl = "http://localhost:5984/lolstats"; // Zmień na właściwe
+    private final String dbUrl = "http://localhost:5984/lolstats";
 
     public LeagueEntryDTO save(LeagueEntryDTO entry) {
         try {

@@ -6,10 +6,13 @@ import com.backendwebsite.DatabaseBuilder.Helper.DatabaseHelper;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.catalina.mapper.Mapper;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -21,13 +24,19 @@ import com.backendwebsite.DatabaseBuilder.Step.StepsOrder.RequestStatus;
 @Component
 public class CouchDBClient {
     private final CommunicationFactory communicationFactory;
-    public CouchDBClient(CommunicationFactory communicationFactory) {
+    private final ObjectMapper mapper;
+    CloseableHttpClient httpClient;
+    public CouchDBClient(ObjectMapper mapper, CommunicationFactory communicationFactory) {
+        this.httpClient = communicationFactory.createCloseableHttpClient();
+        this.mapper = mapper;
         this.communicationFactory = communicationFactory;
     }
 
-    public RequestStatus sendPut(String urn, String region, String json)  {
-        try(CloseableHttpClient httpClient = communicationFactory.createCloseableHttpClient(region)) {
-            HttpPut put = communicationFactory.createHttpPut(urn, region);
+    public record Response(RequestStatus status, JsonNode body) { }
+
+    public RequestStatus sendPut(String urn, String json)  {
+        try {
+            HttpPut put = communicationFactory.createHttpPut(urn);
             put.setEntity(new StringEntity(json));
 
             HttpResponse dbResponse = httpClient.execute(put);
@@ -56,6 +65,34 @@ public class CouchDBClient {
         catch (Exception e) {
             System.err.println("Unknown CouchDB error: " + e.getMessage());
             return RequestStatus.FAILED;
+        }
+    }
+
+    public Response sendGet(String urn)  {
+        try {
+            HttpGet get = communicationFactory.createHttpGet(urn);
+            HttpResponse dbResponse = httpClient.execute(get);
+
+            int statusCode = dbResponse.getStatusLine().getStatusCode();
+
+            System.out.println("Status: " + dbResponse.getStatusLine());
+
+            JsonNode responseBody = mapper.readTree(dbResponse.getEntity().getContent());
+
+            System.out.println("GET response body: " + responseBody);
+
+            if (statusCode == 200) {
+                System.out.println("CouchDB: Document get successfully.");
+                return new Response(RequestStatus.SUCCESSFUL, responseBody);
+            }
+            else {
+                System.err.println("CouchDB request failed with status: " + statusCode);
+                return new Response(RequestStatus.FAILED, responseBody);
+            }
+        }
+        catch (Exception e){
+            System.err.println("Unknown CouchDB error: " + e.getMessage());
+            return new Response(RequestStatus.SUCCESSFUL, null);
         }
     }
 }

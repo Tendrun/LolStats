@@ -1,49 +1,41 @@
 package com.backendwebsite.DatabaseBuilder.Step.Players;
 
+import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
+import com.backendwebsite.DatabaseBuilder.DTO.getPlayers.LeagueEntryDTO;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
-public class getPlayersFromCouchDBStep implements IStep<BuildPlayerContext> {
+@Component
+public class GetPlayersFromCouchDBStep implements IStep<BuildPlayerContext> {
+    private final CouchDBClient couchDBClient;
+    private final ObjectMapper mapper;
+    public GetPlayersFromCouchDBStep(ObjectMapper mapper, CouchDBClient couchDBClient) {
+        this.mapper = mapper;
+        this.couchDBClient = couchDBClient;
+    }
+
     @Override
     public void execute(BuildPlayerContext context) {
-        /*
-        List<LeagueEntryDTO> players = new ArrayList<>();
+        try {
+            String urn = "/players/_all_docs?include_docs=true";
 
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            String fullUrl = couchDbUrl + "/players/_all_docs?include_docs=true";
+            CouchDBClient.Response response = couchDBClient.sendGet(urn);
 
-            HttpGet get = new HttpGet(fullUrl);
-            String auth = "admin:admin";
-            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-            get.setHeader("Authorization", "Basic " + encodedAuth);
+            for (JsonNode row : response.body().get("rows")) {
+                JsonNode doc = row.get("doc");
+                LeagueEntryDTO player = mapper.treeToValue(doc, LeagueEntryDTO.class);
+                context.existingPlayers.add(player);
 
-            HttpResponse response = httpClient.execute(get);
-            if (response.getStatusLine().getStatusCode() == 200) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode root = mapper.readTree(response.getEntity().getContent());
-
-                for (JsonNode row : root.get("rows")) {
-                    JsonNode doc = row.get("doc");
-                    LeagueEntryDTO player = mapper.treeToValue(doc, LeagueEntryDTO.class);
-                    players.add(player);
-                }
-            } else {
-                System.err.println("Failed to fetch players: " + response.getStatusLine());
+                System.out.println("Get = " + player.get_id());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return players;*/
     }
 }

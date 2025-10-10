@@ -1,26 +1,25 @@
 package com.backendwebsite.DatabaseBuilder.Step.Players;
 
-import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
 import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
+import com.backendwebsite.DatabaseBuilder.DTO.getPlayers.LeagueEntryDTO;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
 public class FetchPlayersStep implements IStep<BuildPlayerContext> {
-
     private final RiotApiClient riotApiClient;
-    private final CouchDBClient couchDBClient;
+    private final ObjectMapper mapper;
 
-    public FetchPlayersStep(RiotApiClient riotApiClient,
-                            CouchDBClient couchDBClient){
+    FetchPlayersStep(RiotApiClient riotApiClient, ObjectMapper mapper){
         this.riotApiClient = riotApiClient;
-        this.couchDBClient = couchDBClient;
+        this.mapper = mapper;
     }
-    
+
     @Override
     public void execute(BuildPlayerContext context) {
         getPlayersFromRiot(context);
@@ -30,24 +29,22 @@ public class FetchPlayersStep implements IStep<BuildPlayerContext> {
         String urnRiot = "/lol/league/v4/entries/" + context.queue + "/" + context.tier + "/" +
                 context.division + "?page=" + context.page;
 
-        System.out.println(urnRiot);
+        RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region);
 
         try {
-            RiotApiClient.Response root = riotApiClient.sendRequest(urnRiot, context.region);
+            for (JsonNode row : response.body().get("rows")) {
+                JsonNode doc = row.get("doc");
+                LeagueEntryDTO player = mapper.treeToValue(doc, LeagueEntryDTO.class);
+                context.fetchedPlayers.add(player);
 
-            for (JsonNode match : root.body()) {
-
-                //TO DO
-                //This is very bad
-                String id = match.has("leagueId") ? match.get("leagueId").asText() : UUID.randomUUID().toString();
-                String json = match.toString();
-                String urnCouchDB = "/players/" + id;
-
-                couchDBClient.sendPut(urnCouchDB, context.region, json);
+                System.out.println("Get = " + player.get_id());
             }
-            System.out.println("All matches uploaded to CouchDB");
-        } catch (Exception e) {
+        } catch (Exception e){
             e.printStackTrace();
         }
+
+        System.out.println(urnRiot);
     }
+
+
 }
