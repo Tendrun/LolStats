@@ -32,7 +32,7 @@ public class GetPlayersFromCouchDBStep implements IStep<BuildPlayerContext> {
                 LeagueEntryDTO player = mapper.treeToValue(doc, LeagueEntryDTO.class);
                 context.existingPlayers.add(player);
 
-                System.out.println("Get = " + player.get_id());
+                System.out.println("Get = " + player._id);
             }
         } catch (Exception e) {
             e.printStackTrace();

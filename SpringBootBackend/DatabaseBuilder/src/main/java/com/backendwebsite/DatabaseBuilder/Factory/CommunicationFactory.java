@@ -2,6 +2,7 @@ package com.backendwebsite.DatabaseBuilder.Factory;
 
 import com.backendwebsite.DatabaseBuilder.Factory.Request.IRequest;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -62,6 +63,15 @@ public class CommunicationFactory {
         put.setHeader("Authorization", "Basic " + encodedAuth);
 
         return put;
+    }
+
+    public HttpPost createHttpPost(String urn) {
+        HttpPost post = new HttpPost(couchDbUrl + urn);
+        String encodedAuth = getEncodedAuth();
+        post.setHeader("Content-type", "application/json");
+        post.setHeader("Authorization", "Basic " + encodedAuth);
+
+        return post;
     }
 
     public HttpGet createHttpGet(String urn) {

@@ -33,16 +33,12 @@ public class RiotApiClient {
             int statusCode = response.statusCode();
             JsonNode body = mapper.readTree(response.body());
 
-            if (statusCode == 201) {
-                System.out.println("CouchDB: Document saved successfully.");
+            if (statusCode == 200) {
+                System.out.println("Riot Client: Document received successfully.");
                 return new Response(RequestStatus.SUCCESSFUL, body);
             }
-            else if (statusCode == 409) {
-                System.out.println("CouchDB: Document already exists — skipped.");
-                return new Response(RequestStatus.SKIPPED, body);
-            }
             else {
-                System.err.println("CouchDB request failed with status: " + statusCode);
+                System.err.println("Riot Client request failed with status: " + statusCode);
                 return new Response(RequestStatus.FAILED, body);
             }
         } catch (Exception e) {

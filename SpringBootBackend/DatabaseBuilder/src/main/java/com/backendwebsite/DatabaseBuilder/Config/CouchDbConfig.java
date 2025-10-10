@@ -1,4 +1,4 @@
-package com.backendwebsite.DatabaseBuilder.CouchDB;
+package com.backendwebsite.DatabaseBuilder.Config;
 
 import org.lightcouch.CouchDbClient;
 import org.lightcouch.CouchDbProperties;

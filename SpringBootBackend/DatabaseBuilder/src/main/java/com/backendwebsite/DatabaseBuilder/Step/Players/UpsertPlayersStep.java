@@ -6,41 +6,37 @@ import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
 import com.backendwebsite.DatabaseBuilder.Context.IContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 public class UpsertPlayersStep implements IStep<BuildPlayerContext> {
 
     CouchDBClient couchDBClient;
+    ObjectMapper mapper;
 
-    public UpsertPlayersStep(CouchDBClient couchDBClient) {
+    public UpsertPlayersStep(CouchDBClient couchDBClient, ObjectMapper mapper) {
+        this.mapper = mapper;
         this.couchDBClient = couchDBClient;
     }
 
     @Override
     public void execute(BuildPlayerContext context) {
-        sendPlayerToCouchDB();
+        sendPlayerToCouchDB(context);
     }
 
-    public void sendPlayerToCouchDB() {
-        /*
+    public void sendPlayerToCouchDB(BuildPlayerContext context) {
         try {
-            for (JsonNode match : body) {
+            String json = mapper.writeValueAsString(Map.of("docs", context.finalPlayers));
+            String urnCouchDB = "/players/_bulk_docs";
 
-                /// Skip when no id
-                if (!match.has("leagueId")) continue;
+            couchDBClient.sendPost(urnCouchDB, json);
 
-                String id = match.get("leagueId").asText();
-                String json = match.toString();
-                String urnCouchDB = "/players/" + id;
-
-                couchDBClient.sendPut(urnCouchDB, json);
-            }
             System.out.println("All matches uploaded to CouchDB");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        */
-
     }
 }

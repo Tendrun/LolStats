@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.catalina.mapper.Mapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -40,6 +41,40 @@ public class CouchDBClient {
             put.setEntity(new StringEntity(json));
 
             HttpResponse dbResponse = httpClient.execute(put);
+            int statusCode = dbResponse.getStatusLine().getStatusCode();
+
+            System.out.println("Status: " + dbResponse.getStatusLine());
+
+            String responseBody = DatabaseHelper.reader(new BufferedReader(
+                    new InputStreamReader(dbResponse.getEntity().getContent())));
+
+            System.out.println("PUT response body: " + responseBody);
+
+            if (statusCode == 201) {
+                System.out.println("CouchDB: Document saved successfully.");
+                return RequestStatus.SUCCESSFUL;
+            }
+            else if (statusCode == 409) {
+                System.out.println("CouchDB: Document already exists — skipped.");
+                return RequestStatus.SKIPPED;
+            }
+            else {
+                System.err.println("CouchDB request failed with status: " + statusCode);
+                return RequestStatus.FAILED;
+            }
+        }
+        catch (Exception e) {
+            System.err.println("Unknown CouchDB error: " + e.getMessage());
+            return RequestStatus.FAILED;
+        }
+    }
+
+    public RequestStatus sendPost(String urn, String json)  {
+        try {
+            HttpPost post = communicationFactory.createHttpPost(urn);
+            post.setEntity(new StringEntity(json));
+
+            HttpResponse dbResponse = httpClient.execute(post);
             int statusCode = dbResponse.getStatusLine().getStatusCode();
 
             System.out.println("Status: " + dbResponse.getStatusLine());

@@ -32,12 +32,11 @@ public class FetchPlayersStep implements IStep<BuildPlayerContext> {
         RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region);
 
         try {
-            for (JsonNode row : response.body().get("rows")) {
-                JsonNode doc = row.get("doc");
-                LeagueEntryDTO player = mapper.treeToValue(doc, LeagueEntryDTO.class);
+            for (JsonNode row : response.body()) {
+                LeagueEntryDTO player = mapper.treeToValue(row, LeagueEntryDTO.class);
                 context.fetchedPlayers.add(player);
 
-                System.out.println("Get = " + player.get_id());
+                System.out.println("Get = " + player.leagueId);
             }
         } catch (Exception e){
             e.printStackTrace();
