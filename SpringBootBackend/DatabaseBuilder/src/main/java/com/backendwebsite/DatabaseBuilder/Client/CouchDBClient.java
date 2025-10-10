@@ -14,6 +14,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -33,15 +34,18 @@ public class CouchDBClient {
         this.communicationFactory = communicationFactory;
     }
 
-    public record Response(RequestStatus status, JsonNode body) { }
+    public record Response(RequestStatus status, @Nullable JsonNode body,  @Nullable String message) { }
 
-    public RequestStatus sendPut(String urn, String json)  {
+    public Response sendPut(String urn, String json)  {
+
+        int statusCode = 0;
+
         try {
             HttpPut put = communicationFactory.createHttpPut(urn);
             put.setEntity(new StringEntity(json));
 
             HttpResponse dbResponse = httpClient.execute(put);
-            int statusCode = dbResponse.getStatusLine().getStatusCode();
+            statusCode = dbResponse.getStatusLine().getStatusCode();
 
             System.out.println("Status: " + dbResponse.getStatusLine());
 
@@ -50,32 +54,36 @@ public class CouchDBClient {
 
             System.out.println("PUT response body: " + responseBody);
 
-            if (statusCode == 201) {
+            if (statusCode == 201 || statusCode == 202) {
                 System.out.println("CouchDB: Document saved successfully.");
-                return RequestStatus.SUCCESSFUL;
+                return new Response(RequestStatus.SUCCESSFUL, null, "CouchDB: Document get successfully");
             }
             else if (statusCode == 409) {
                 System.out.println("CouchDB: Document already exists — skipped.");
-                return RequestStatus.SKIPPED;
+                return new Response(RequestStatus.SKIPPED, null, "Document already exists — skipped.");
             }
             else {
                 System.err.println("CouchDB request failed with status: " + statusCode);
-                return RequestStatus.FAILED;
+                return new Response(RequestStatus.FAILED, null, "CouchDB request failed with status: " +
+                        "\" + statusCode");
             }
         }
         catch (Exception e) {
             System.err.println("Unknown CouchDB error: " + e.getMessage());
-            return RequestStatus.FAILED;
+            return new Response(RequestStatus.FAILED, null, "Unknown CouchDB error: " + statusCode);
         }
     }
 
-    public RequestStatus sendPost(String urn, String json)  {
+    public Response sendPost(String urn, String json) {
+
+        int statusCode = 0;
+
         try {
             HttpPost post = communicationFactory.createHttpPost(urn);
             post.setEntity(new StringEntity(json));
 
             HttpResponse dbResponse = httpClient.execute(post);
-            int statusCode = dbResponse.getStatusLine().getStatusCode();
+            statusCode = dbResponse.getStatusLine().getStatusCode();
 
             System.out.println("Status: " + dbResponse.getStatusLine());
 
@@ -86,20 +94,22 @@ public class CouchDBClient {
 
             if (statusCode == 201) {
                 System.out.println("CouchDB: Document saved successfully.");
-                return RequestStatus.SUCCESSFUL;
+                return new Response(RequestStatus.SUCCESSFUL, null, "Document get successfully");
             }
             else if (statusCode == 409) {
                 System.out.println("CouchDB: Document already exists — skipped.");
-                return RequestStatus.SKIPPED;
+                return new Response(RequestStatus.SKIPPED, null, "Document already exists — skipped.");
             }
             else {
                 System.err.println("CouchDB request failed with status: " + statusCode);
-                return RequestStatus.FAILED;
+                return new Response(RequestStatus.FAILED, null, "Document already exists — skipped." +
+                        statusCode);
             }
         }
         catch (Exception e) {
             System.err.println("Unknown CouchDB error: " + e.getMessage());
-            return RequestStatus.FAILED;
+            return new Response(RequestStatus.FAILED, null, "Unknown CouchDB error" + statusCode);
+
         }
     }
 
@@ -118,16 +128,16 @@ public class CouchDBClient {
 
             if (statusCode == 200) {
                 System.out.println("CouchDB: Document get successfully.");
-                return new Response(RequestStatus.SUCCESSFUL, responseBody);
+                return new Response(RequestStatus.SUCCESSFUL, responseBody, "Document get successfully");
             }
             else {
                 System.err.println("CouchDB request failed with status: " + statusCode);
-                return new Response(RequestStatus.FAILED, responseBody);
+                return new Response(RequestStatus.FAILED, responseBody, "Error");
             }
         }
         catch (Exception e){
             System.err.println("Unknown CouchDB error: " + e.getMessage());
-            return new Response(RequestStatus.SUCCESSFUL, null);
+            return new Response(RequestStatus.SUCCESSFUL, null, "Unknown Error");
         }
     }
 }

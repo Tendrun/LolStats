@@ -5,6 +5,7 @@ import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
 import com.backendwebsite.DatabaseBuilder.Context.IContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
+import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,6 @@ public class UpsertPlayersStep implements IStep<BuildPlayerContext> {
             String urnCouchDB = "/players/_bulk_docs";
 
             couchDBClient.sendPost(urnCouchDB, json);
-
             System.out.println("All matches uploaded to CouchDB");
         } catch (Exception e) {
             e.printStackTrace();

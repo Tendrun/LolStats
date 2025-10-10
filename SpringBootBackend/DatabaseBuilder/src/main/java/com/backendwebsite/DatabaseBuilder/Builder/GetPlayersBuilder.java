@@ -12,7 +12,6 @@ import java.util.Map;
 
 @Component
 public class GetPlayersBuilder implements IBuilder<BuildPlayerContext, Object> {
-
     private final StepsOrder<BuildPlayerContext> steps;
 
     public GetPlayersBuilder(GetPlayersFromCouchDBStep getPlayersFromCouchDBStep, DeduplicatePlayersStep deduplicatePlayersStep,
@@ -26,7 +25,6 @@ public class GetPlayersBuilder implements IBuilder<BuildPlayerContext, Object> {
         map.put(3, validatePlayersStep);
         map.put(4, deduplicatePlayersStep);
         map.put(5, upsertPlayersStep);
-
 
         this.steps = new StepsOrder<>(map);
     }
