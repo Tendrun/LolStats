@@ -1,4 +1,4 @@
-package com.backendwebsite.DatabaseBuilder.DTO.getPlayers.Match;
+package com.backendwebsite.DatabaseBuilder.DTO.RiotApi.Match;
 
 import java.util.List;
 

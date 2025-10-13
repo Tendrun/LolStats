@@ -1,8 +1,8 @@
 package com.backendwebsite.DatabaseBuilder.Step.Players;
 
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
-import com.backendwebsite.DatabaseBuilder.Context.IContext;
-import com.backendwebsite.DatabaseBuilder.DTO.getPlayers.LeagueEntryDTO;
+import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.Player.LeagueEntryDTO;
+import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ public class DeduplicatePlayersStep implements IStep<BuildPlayerContext> {
                 .map(p -> p._id)
                 .collect(Collectors.toSet());
 
-        List<LeagueEntryDTO> finalPlayers = context.validatedPlayers.stream()
+        List<Player> finalPlayers = context.validatedPlayers.stream()
                 .filter(p -> !existingIds.contains(p._id))
                 .toList();
 

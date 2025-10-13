@@ -7,7 +7,9 @@ import com.backendwebsite.DatabaseBuilder.Step.Players.*;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -18,15 +20,15 @@ public class GetPlayersBuilder implements IBuilder<BuildPlayerContext, Object> {
                              FetchPlayersStep fetchPlayersStep, ValidatePlayersStep validatePlayersStep,
                              UpsertPlayersStep upsertPlayersStep) {
 
-        Map<Integer, IStep<BuildPlayerContext>> map = new LinkedHashMap<>();
+        List<IStep<BuildPlayerContext>> stepsList = new ArrayList<>();
 
-        map.put(1, getPlayersFromCouchDBStep);
-        map.put(2, fetchPlayersStep);
-        map.put(3, validatePlayersStep);
-        map.put(4, deduplicatePlayersStep);
-        map.put(5, upsertPlayersStep);
+        stepsList.add(getPlayersFromCouchDBStep);
+        stepsList.add(fetchPlayersStep);
+        stepsList.add(validatePlayersStep);
+        stepsList.add(deduplicatePlayersStep);
+        stepsList.add(upsertPlayersStep);
 
-        this.steps = new StepsOrder<>(map);
+        this.steps = new StepsOrder<>(stepsList);
     }
 
     @Override

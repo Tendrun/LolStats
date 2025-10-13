@@ -5,9 +5,9 @@ import com.backendwebsite.DatabaseBuilder.Context.IContext;
 import java.util.*;
 
 public final class StepsOrder<C extends IContext> {
-    public final LinkedHashMap<Integer, IStep<C>> steps;
-    public StepsOrder(Map<Integer, IStep<C>> steps) {
-        this.steps = new LinkedHashMap<>(steps);
+    public final ArrayList<IStep<C>> steps;
+    public StepsOrder(List<IStep<C>> steps) {
+        this.steps = new ArrayList<>(steps);
     }
 
     public enum RequestStatus {

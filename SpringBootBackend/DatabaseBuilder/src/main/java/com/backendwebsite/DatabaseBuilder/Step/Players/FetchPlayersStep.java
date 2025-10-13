@@ -2,13 +2,12 @@ package com.backendwebsite.DatabaseBuilder.Step.Players;
 
 import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
-import com.backendwebsite.DatabaseBuilder.DTO.getPlayers.LeagueEntryDTO;
+import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.Player.LeagueEntryDTO;
+import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class FetchPlayersStep implements IStep<BuildPlayerContext> {
@@ -29,14 +28,14 @@ public class FetchPlayersStep implements IStep<BuildPlayerContext> {
         String urnRiot = "/lol/league/v4/entries/" + context.queue + "/" + context.tier + "/" +
                 context.division + "?page=" + context.page;
 
-        RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region);
+        RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region.name());
 
         try {
             for (JsonNode row : response.body()) {
-                LeagueEntryDTO player = mapper.treeToValue(row, LeagueEntryDTO.class);
+                Player player = mapper.treeToValue(row, Player.class);
                 context.fetchedPlayers.add(player);
 
-                System.out.println("Get = " + player.leagueId);
+                System.out.println("Get = " + player.puuid);
             }
         } catch (Exception e){
             e.printStackTrace();
@@ -44,6 +43,4 @@ public class FetchPlayersStep implements IStep<BuildPlayerContext> {
 
         System.out.println(urnRiot);
     }
-
-
 }

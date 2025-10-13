@@ -34,7 +34,7 @@ public class UpsertPlayersStep implements IStep<BuildPlayerContext> {
             String urnCouchDB = "/players/_bulk_docs";
 
             couchDBClient.sendPost(urnCouchDB, json);
-            System.out.println("All matches uploaded to CouchDB");
+            System.out.println("Request is send to CouchDB");
         } catch (Exception e) {
             e.printStackTrace();
         }

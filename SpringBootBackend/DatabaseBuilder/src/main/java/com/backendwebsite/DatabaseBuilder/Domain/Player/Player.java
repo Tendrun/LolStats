@@ -1,15 +1,10 @@
-package com.backendwebsite.DatabaseBuilder.DTO.getPlayers;
+package com.backendwebsite.DatabaseBuilder.Domain.Player;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class LeagueEntryDTO {
-    public String _id; // CouchDB uses _id
-    public final String leagueId;
+public class Player {
+    public String _id;
     public final String queueType;
     public final String tier;
     public final String rank;
-    public final String summonerId;
     public final String puuid;
     public final int leaguePoints;
     public final int wins;
@@ -18,17 +13,15 @@ public class LeagueEntryDTO {
     public final boolean inactive;
     public final boolean freshBlood;
     public final boolean hotStreak;
+    public String region;
 
-    public LeagueEntryDTO(String _id, String leagueId, String queueType, String tier,
-                          String rank, String summonerId, String puuid,
-                          int leaguePoints, int wins, int losses,
-                          boolean veteran, boolean inactive, boolean freshBlood, boolean hotStreak) {
+    public Player(String _id, String queueType, String tier,
+                  String rank, String puuid, int leaguePoints, int wins, int losses,
+                  boolean veteran, boolean inactive, boolean freshBlood, boolean hotStreak, String region) {
         this._id = _id;
-        this.leagueId = leagueId;
         this.queueType = queueType;
         this.tier = tier;
         this.rank = rank;
-        this.summonerId = summonerId;
         this.puuid = puuid;
         this.leaguePoints = leaguePoints;
         this.wins = wins;
@@ -37,5 +30,6 @@ public class LeagueEntryDTO {
         this.inactive = inactive;
         this.freshBlood = freshBlood;
         this.hotStreak = hotStreak;
+        this.region = region;
     }
 }

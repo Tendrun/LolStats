@@ -73,7 +73,6 @@ public class CouchDBClient {
             return new Response(RequestStatus.FAILED, null, "Unknown CouchDB error: " + statusCode);
         }
     }
-
     public Response sendPost(String urn, String json) {
 
         int statusCode = 0;
@@ -92,7 +91,12 @@ public class CouchDBClient {
 
             System.out.println("PUT response body: " + responseBody);
 
-            if (statusCode == 201) {
+            if (statusCode == 200) {
+                JsonNode body = mapper.readTree(responseBody);
+                System.out.println("CouchDB: Document saved successfully.");
+                return new Response(RequestStatus.SUCCESSFUL, body, "Document get successfully");
+            }
+            else if (statusCode == 201) {
                 System.out.println("CouchDB: Document saved successfully.");
                 return new Response(RequestStatus.SUCCESSFUL, null, "Document get successfully");
             }
@@ -112,8 +116,7 @@ public class CouchDBClient {
 
         }
     }
-
-    public Response sendGet(String urn)  {
+    public Response sendGet(String urn) {
         try {
             HttpGet get = communicationFactory.createHttpGet(urn);
             HttpResponse dbResponse = httpClient.execute(get);
