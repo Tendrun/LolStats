@@ -3,8 +3,8 @@ package com.backendwebsite.DatabaseBuilder.Controller;
 import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.Match.GetMatchesRequest;
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.Player.GetPlayersRequest;
-import com.backendwebsite.DatabaseBuilder.Director.MatchDirector;
-import com.backendwebsite.DatabaseBuilder.Director.PlayersDirector;
+import com.backendwebsite.DatabaseBuilder.Director.FetchMatchesDirector;
+import com.backendwebsite.DatabaseBuilder.Director.FetchPlayersDirector;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,12 +16,12 @@ import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
 @RequestMapping("api/database")
 public class DatabaseController {
 
-    private final PlayersDirector playersDirector;
-    private final MatchDirector matchDirector;
+    private final FetchPlayersDirector fetchPlayersDirector;
+    private final FetchMatchesDirector fetchMatchesDirector;
 
-    public DatabaseController(PlayersDirector playersDirector, MatchDirector matchDirector) {
-        this.playersDirector = playersDirector;
-        this.matchDirector = matchDirector;
+    public DatabaseController(FetchPlayersDirector fetchPlayersDirector, FetchMatchesDirector fetchMatchesDirector) {
+        this.fetchPlayersDirector = fetchPlayersDirector;
+        this.fetchMatchesDirector = fetchMatchesDirector;
     }
 
 
@@ -35,7 +35,7 @@ public class DatabaseController {
                 req.queue(),
                 req.page());
 
-        playersDirector.startWork(context);
+        fetchPlayersDirector.startWork(context);
 
         // TO DO
         // failed and success logs
@@ -48,7 +48,7 @@ public class DatabaseController {
 
         BuildMatchContext context = new BuildMatchContext(BuildMatchContext.Region.valueOf(req.region()));
 
-        matchDirector.startWork(context);
+        fetchMatchesDirector.startWork(context);
 
         return ResponseEntity.ok("");
     }

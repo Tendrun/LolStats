@@ -1,8 +1,7 @@
-package com.backendwebsite.DatabaseBuilder.Step.Players;
+package com.backendwebsite.DatabaseBuilder.Step.FetchPlayers;
 
 import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
-import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.Player.LeagueEntryDTO;
 import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,11 +9,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FetchPlayersStep implements IStep<BuildPlayerContext> {
+public class PullPlayersFromRiotStep implements IStep<BuildPlayerContext> {
     private final RiotApiClient riotApiClient;
     private final ObjectMapper mapper;
 
-    FetchPlayersStep(RiotApiClient riotApiClient, ObjectMapper mapper){
+    PullPlayersFromRiotStep(RiotApiClient riotApiClient, ObjectMapper mapper){
         this.riotApiClient = riotApiClient;
         this.mapper = mapper;
     }

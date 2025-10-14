@@ -36,9 +36,12 @@ public class RiotApiClient {
             if (statusCode == 200) {
                 System.out.println("Riot Client: Document received successfully.");
                 return new Response(RequestStatus.SUCCESSFUL, body);
+            } else if (statusCode == 401) {
+                System.err.println("Riot Client: Check Riot API Key");
+                return new Response(RequestStatus.FAILED, body);
             }
             else {
-                System.err.println("Riot Client request failed with status: " + statusCode);
+                System.err.println("Riot Client: request failed with status: " + statusCode);
                 return new Response(RequestStatus.FAILED, body);
             }
         } catch (Exception e) {

@@ -1,7 +1,6 @@
-package com.backendwebsite.DatabaseBuilder.Step.Players;
+package com.backendwebsite.DatabaseBuilder.Step.FetchPlayers;
 
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
-import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.Player.LeagueEntryDTO;
 import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import org.springframework.stereotype.Component;

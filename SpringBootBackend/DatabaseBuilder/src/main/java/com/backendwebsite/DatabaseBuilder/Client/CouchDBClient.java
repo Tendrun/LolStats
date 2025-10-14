@@ -89,7 +89,7 @@ public class CouchDBClient {
             String responseBody = DatabaseHelper.reader(new BufferedReader(
                     new InputStreamReader(dbResponse.getEntity().getContent())));
 
-            System.out.println("PUT response body: " + responseBody);
+            System.out.println("POST response body: " + responseBody);
 
             if (statusCode == 200) {
                 JsonNode body = mapper.readTree(responseBody);

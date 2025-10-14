@@ -1,12 +1,8 @@
-package com.backendwebsite.DatabaseBuilder.Step.Players;
+package com.backendwebsite.DatabaseBuilder.Step.FetchPlayers;
 
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
-import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
-import com.backendwebsite.DatabaseBuilder.Context.IContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
-import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 

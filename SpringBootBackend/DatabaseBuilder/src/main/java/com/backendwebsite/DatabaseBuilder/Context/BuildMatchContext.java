@@ -1,9 +1,10 @@
 package com.backendwebsite.DatabaseBuilder.Context;
 
-import com.backendwebsite.DatabaseBuilder.Domain.Match.Match;
+import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class BuildMatchContext implements IContext {
@@ -13,10 +14,10 @@ public class BuildMatchContext implements IContext {
 
     public final Region region;
     public List<String> puuids = new ArrayList<>();
-    public List<String> fetchedMatches = new ArrayList<>();
-    public List<Match> validatedMatches = new ArrayList<>();
-    public List<Match> existingMatches = new ArrayList<>();
-    public List<Match> finalMatches = new ArrayList<>();
+    public HashMap<String, List<PlayerMatches>> fetchedMatches = new HashMap<>();
+    public List<PlayerMatches> finalPlayerMatches = new ArrayList<>();
+    public List<String> deduplicateMatches = new ArrayList<>();
+    public HashMap<String, List<PlayerMatches>> existingMatches = new HashMap<>();
     public List<StepLog> logs = new ArrayList<>();
 
     public BuildMatchContext(Region region) {

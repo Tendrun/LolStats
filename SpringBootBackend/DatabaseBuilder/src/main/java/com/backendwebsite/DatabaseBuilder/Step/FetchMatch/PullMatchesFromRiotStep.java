@@ -1,21 +1,22 @@
-package com.backendwebsite.DatabaseBuilder.Step.Match;
+package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 
 import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
-import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
-import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.Player.LeagueEntryDTO;
-import com.backendwebsite.DatabaseBuilder.Domain.Match.Match;
+import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+
+
 @Component
-public class FetchMatchesStep implements IStep<BuildMatchContext> {
+public class PullMatchesFromRiotStep implements IStep<BuildMatchContext> {
     private final RiotApiClient riotApiClient;
     private final ObjectMapper mapper;
 
-    FetchMatchesStep(RiotApiClient riotApiClient, ObjectMapper mapper){
+    PullMatchesFromRiotStep(RiotApiClient riotApiClient, ObjectMapper mapper){
         this.riotApiClient = riotApiClient;
         this.mapper = mapper;
     }
@@ -32,10 +33,11 @@ public class FetchMatchesStep implements IStep<BuildMatchContext> {
 
             try {
                 for (JsonNode row : response.body()) {
-                    String match = mapper.treeToValue(row, String.class);
-                    context.fetchedMatches.add(match);
+                    PlayerMatches matchId  = mapper.treeToValue(row, PlayerMatches.class);
+                    PlayerMatches playerMatches = new PlayerMatches(matchId, puuid, puuid);
+                    context.fetchedMatches.computeIfAbsent(puuid, k -> new ArrayList<>()).add(playerMatches);
 
-                    System.out.println("Get = " + match);
+                    System.out.println("Get = " + playerMatches);
                 }
             } catch (Exception e){
                 e.printStackTrace();
