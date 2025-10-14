@@ -5,6 +5,7 @@ import com.backendwebsite.Api.Service.ChampionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,36 +31,17 @@ public class ChampionController {
         return ResponseEntity.ok(listOfChampions);
     }
 
-    @GetMapping("/getChampion")
-    public ResponseEntity<Map<String, Object>> getChampion() {
-        Map<String, Object> fullRunes = new LinkedHashMap<>();
-        Map<String, Object> response = Map.of("fullRunes", fullRunes);
+    @GetMapping("/getChampion/{id}")
+    public ResponseEntity<Map<String, Object>> getChampion(@PathVariable String id) {
+        Map<String, Object> response =  new LinkedHashMap<>();
 
-        fullRunes.put("generalRunes", List.of(
-                Map.of("displayName", "Summon Aery", "id", 8214),
-                Map.of("displayName", "Manaflow Band", "id", 8226),
-                Map.of("displayName", "Transcendence", "id", 8210),
-                Map.of("displayName", "Scorch", "id", 8237),
-                Map.of("displayName", "Bone Plating", "id", 8473),
-                Map.of("displayName", "Revitalize", "id", 8453)
+        response.put("FullStats", List.of(
+                Map.of("WinRate", 53.23d),
+                Map.of("BanRate", 3.23d),
+                Map.of("PickRate", 13.02),
+                Map.of("Matches", "1302"),
+                Map.of("Tier", "A")
         ));
-
-        fullRunes.put("primaryRuneTree", Map.of(
-                "displayName", "Sorcery",
-                "id", 8200
-        ));
-
-        fullRunes.put("secondaryRuneTree", Map.of(
-                "displayName", "Resolve",
-                "id", 8400
-        ));
-
-        fullRunes.put("statRunes", List.of(
-                Map.of("id", 5007, "rawDescription", "perk_tooltip_StatModCooldownReductionScaling"),
-                Map.of("id", 5008, "rawDescription", "perk_tooltip_StatModAdaptive"),
-                Map.of("id", 5001, "rawDescription", "perk_tooltip_StatModHealthScaling")
-        ));
-
 
         return ResponseEntity.ok(response);
     }
