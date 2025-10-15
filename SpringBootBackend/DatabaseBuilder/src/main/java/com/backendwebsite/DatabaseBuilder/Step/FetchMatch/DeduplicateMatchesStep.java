@@ -3,28 +3,44 @@ package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Component
 public class DeduplicateMatchesStep implements IStep<BuildMatchContext> {
+    private final ObjectMapper mapper;
+
+    public DeduplicateMatchesStep(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
+
     @Override
     public void execute(BuildMatchContext context) {
         deduplicateMatches(context);
     }
 
     public void deduplicateMatches(BuildMatchContext context) {
-        Set<PlayerMatches> mergedSet = new LinkedHashSet<>();
+        for (Map.Entry<String, PlayerMatches> entry : context.fetchedMatches.entrySet()) {
+            Set<String> mergedMatchIds = new LinkedHashSet<>();
 
-        for (Map.Entry<String, List<PlayerMatches>> entry : context.fetchedMatches.entrySet()) {
+            // key here is also player's puuid
             String key = entry.getKey();
-            List<PlayerMatches> fetchedList = entry.getValue();
-            List<PlayerMatches> existingList = context.existingMatches.getOrDefault(key, List.of());
 
-            mergedSet.addAll(existingList);
-            mergedSet.addAll(fetchedList);
+            List<String> fetchedList = entry.getValue().matchIds();
+            PlayerMatches exisitngPlayerMatches = context.existingMatches.getOrDefault(key,
+                    new PlayerMatches(Collections.emptyList(), null, null, ""));
+            List<String> existingList = exisitngPlayerMatches.matchIds();
+            String rev = exisitngPlayerMatches._rev();
+
+            mergedMatchIds.addAll(existingList);
+            mergedMatchIds.addAll(fetchedList);
+
+            String puuid = entry.getValue().puuid();
+            PlayerMatches playerMatches = new PlayerMatches(mergedMatchIds.stream().toList(), puuid, puuid, rev);
+            context.finalPlayerMatches.add(playerMatches);
         }
-
     }
 }

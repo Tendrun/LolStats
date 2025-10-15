@@ -1,3 +1,3 @@
 package com.backendwebsite.DatabaseBuilder.DTO.AppApi.Match;
 
-public record GetMatchesRequest(String region) { }
+public record GetMatchesRequest(String region, int playerLimit) { }

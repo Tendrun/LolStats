@@ -9,18 +9,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GetPlayersPuuidFromCouchDB implements IStep<BuildMatchContext> {
+public class GetPlayerPuuidsFromCouchDB implements IStep<BuildMatchContext> {
     private final CouchDBClient couchDBClient;
 
-    public GetPlayersPuuidFromCouchDB(CouchDBClient couchDBClient){
+    public GetPlayerPuuidsFromCouchDB(CouchDBClient couchDBClient){
         this.couchDBClient = couchDBClient;
     }
 
     @Override
     public void execute(BuildMatchContext context) {
         try {
-
-            System.err.println("HERE IS SET LIMIT");
             String urn = "/players/_find";
             String body = """
             {
@@ -28,9 +26,9 @@ public class GetPlayersPuuidFromCouchDB implements IStep<BuildMatchContext> {
               "fields": [
                 "puuid"
               ],
-              "limit": 1
+              "limit": %d
             }
-            """;
+            """.formatted(context.playerLimit);
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
 

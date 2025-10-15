@@ -24,14 +24,27 @@ public class GetMatchesFromCouchDBStep implements IStep<BuildMatchContext> {
     @Override
     public void execute(BuildMatchContext context) {
         try {
-            String urn = "/matches/_all_docs?include_docs=true";
-            CouchDBClient.Response response = couchDBClient.sendGet(urn);
+            String idsJson = mapper.writeValueAsString(context.puuids);
 
-            for (JsonNode row : response.body().get("rows")) {
-                JsonNode doc = row.get("doc");
-                PlayerMatches playerMatches = mapper.treeToValue(doc, PlayerMatches.class);
-                context.existingMatches.computeIfAbsent(playerMatches.puuid(), k -> new ArrayList<>()).add(playerMatches);
+            String urn = "/matches/_find";
+            String body = """
+            {
+              "selector": {
+                "_id": {
+                  "$in": %s
+                }
+              },
+              "limit": 999999
+            }
+            """.formatted(idsJson);
 
+
+            CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
+
+            for (JsonNode row : response.body().get("docs")) {
+                PlayerMatches playerMatches = mapper.treeToValue(row, PlayerMatches.class);
+
+                context.existingMatches.put(playerMatches.puuid(), playerMatches);
                 System.out.println("Get = " + playerMatches);
             }
             context.logs.add(new StepLog(response.status(), this, response.message()));

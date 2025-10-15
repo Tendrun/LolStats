@@ -17,27 +17,16 @@ public class FetchMatchesBuilder implements IBuilder<BuildMatchContext, Object> 
     private final StepsOrder<BuildMatchContext> steps;
 
     public FetchMatchesBuilder(GetMatchesFromCouchDBStep getMatchesFromCouchDBStep, PullMatchesFromRiotStep pullMatchesFromRiotStep,
-                               GetPlayersPuuidFromCouchDB getPlayersPuuidFromCouchDB,
+                               GetPlayerPuuidsFromCouchDB getPlayerPuuidsFromCouchDB,
                                DeduplicateMatchesStep deduplicateMatchesStep, UpsertMatchesStep upsertMatchesStep) {
 
         List<IStep<BuildMatchContext>> stepsList = new ArrayList<>();
 
-        stepsList.add(getPlayersPuuidFromCouchDB);
+        stepsList.add(getPlayerPuuidsFromCouchDB);
         stepsList.add(getMatchesFromCouchDBStep);
         stepsList.add(pullMatchesFromRiotStep);
         stepsList.add(deduplicateMatchesStep);
         stepsList.add(upsertMatchesStep);
-
-
-
-        /*
-        stepsList.add(getPlayersFromCouchDBStep);
-        stepsList.add(fetchPlayersStep);
-        stepsList.add(validatePlayersStep);
-        stepsList.add(deduplicatePlayersStep);
-        stepsList.add(upsertPlayersStep);
-         */
-
         this.steps = new StepsOrder<>(stepsList);
     }
 

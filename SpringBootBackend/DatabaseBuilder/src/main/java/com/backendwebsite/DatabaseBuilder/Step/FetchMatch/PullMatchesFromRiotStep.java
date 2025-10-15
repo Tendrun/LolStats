@@ -4,11 +4,13 @@ import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 @Component
@@ -32,17 +34,13 @@ public class PullMatchesFromRiotStep implements IStep<BuildMatchContext> {
             RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region.name());
 
             try {
-                for (JsonNode row : response.body()) {
-                    PlayerMatches matchId  = mapper.treeToValue(row, PlayerMatches.class);
-                    PlayerMatches playerMatches = new PlayerMatches(matchId, puuid, puuid);
-                    context.fetchedMatches.computeIfAbsent(puuid, k -> new ArrayList<>()).add(playerMatches);
-
-                    System.out.println("Get = " + playerMatches);
-                }
+                List<String> matchIds = mapper.convertValue(response.body(), new TypeReference<>() {});
+                PlayerMatches playerMatches = new PlayerMatches(matchIds, puuid, puuid, "");
+                context.fetchedMatches.put(puuid, playerMatches);
+                System.out.println("Get = " + playerMatches);
             } catch (Exception e){
                 e.printStackTrace();
             }
-
             System.out.println(urnRiot);
         }
     }

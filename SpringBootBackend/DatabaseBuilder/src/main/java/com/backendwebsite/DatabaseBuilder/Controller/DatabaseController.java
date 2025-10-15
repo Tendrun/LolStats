@@ -25,7 +25,7 @@ public class DatabaseController {
     }
 
 
-    @GetMapping("/getPlayers")
+    @GetMapping("/FetchPlayers")
     public ResponseEntity getPlayers(@RequestBody GetPlayersRequest req) {
 
         BuildPlayerContext context = new BuildPlayerContext(
@@ -43,10 +43,10 @@ public class DatabaseController {
         return ResponseEntity.ok("");
     }
 
-    @GetMapping("/getMatches")
+    @GetMapping("/FetchMatches")
     public ResponseEntity getPlayers(@RequestBody GetMatchesRequest req) {
 
-        BuildMatchContext context = new BuildMatchContext(BuildMatchContext.Region.valueOf(req.region()));
+        BuildMatchContext context = new BuildMatchContext(BuildMatchContext.Region.valueOf(req.region()), req.playerLimit());
 
         fetchMatchesDirector.startWork(context);
 

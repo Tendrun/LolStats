@@ -2,8 +2,11 @@ package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
 import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -26,7 +29,20 @@ public class UpsertMatchesStep implements IStep<BuildMatchContext> {
 
     public void sendMatchesToCouchDB(BuildMatchContext context) {
         try {
-            String json = mapper.writeValueAsString(Map.of("docs", context.finalPlayerMatches));
+            ArrayNode docs = mapper.createArrayNode();
+
+            for (PlayerMatches playerMatch : context.finalPlayerMatches) {
+                ObjectNode doc = mapper.valueToTree(playerMatch);
+                String rev = playerMatch._rev();
+                if(rev != null && !rev.trim().isEmpty()) {
+                    doc.put("_rev", rev);
+                } else {
+                    doc.remove("_rev");
+                }
+                docs.add(doc);
+            }
+
+            String json = mapper.writeValueAsString(Map.of("docs", docs));
             String urnCouchDB = "/matches/_bulk_docs";
 
             couchDBClient.sendPost(urnCouchDB, json);

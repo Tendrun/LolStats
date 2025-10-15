@@ -12,15 +12,16 @@ public class BuildMatchContext implements IContext {
         europe,
     }
 
+    public int playerLimit;
     public final Region region;
     public List<String> puuids = new ArrayList<>();
-    public HashMap<String, List<PlayerMatches>> fetchedMatches = new HashMap<>();
+    public HashMap<String, PlayerMatches> existingMatches = new HashMap<>();
+    public HashMap<String, PlayerMatches> fetchedMatches = new HashMap<>();
     public List<PlayerMatches> finalPlayerMatches = new ArrayList<>();
-    public List<String> deduplicateMatches = new ArrayList<>();
-    public HashMap<String, List<PlayerMatches>> existingMatches = new HashMap<>();
     public List<StepLog> logs = new ArrayList<>();
 
-    public BuildMatchContext(Region region) {
+    public BuildMatchContext(Region region, int playerLimit) {
         this.region = region;
+        this.playerLimit = playerLimit;
     }
 }
