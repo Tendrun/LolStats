@@ -11,5 +11,4 @@ public class FetchMatchesDirector {
     public void startWork(BuildMatchContext context) {
         fetchMatchesBuilder.build(context);
     }
-
 }

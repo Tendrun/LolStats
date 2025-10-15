@@ -11,6 +11,8 @@ public class BuildMatchContext implements IContext {
     public enum Region {
         europe,
     }
+    // TO DO
+    // Player Matches need additional fields region, average rank
 
     public int playerLimit;
     public final Region region;
