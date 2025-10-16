@@ -1,15 +1,15 @@
 package com.backendwebsite.DatabaseBuilder.Step.FetchPlayers;
 
-import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ValidatePlayersStep implements IStep<BuildPlayerContext> {
+public class ValidatePlayersStep implements IStep<FetchPlayersContext> {
 
     @Override
-    public void execute(BuildPlayerContext context) {
+    public void execute(FetchPlayersContext context) {
         try {
             for (Player player : context.fetchedPlayers) {
 

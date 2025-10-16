@@ -1,7 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-public class UpsertMatchesStep implements IStep<BuildMatchContext> {
+public class UpsertMatchesStep implements IStep<FetchMatchesContext> {
 
     CouchDBClient couchDBClient;
     ObjectMapper mapper;
@@ -23,11 +23,11 @@ public class UpsertMatchesStep implements IStep<BuildMatchContext> {
     }
 
     @Override
-    public void execute(BuildMatchContext context) {
+    public void execute(FetchMatchesContext context) {
         sendMatchesToCouchDB(context);
     }
 
-    public void sendMatchesToCouchDB(BuildMatchContext context) {
+    public void sendMatchesToCouchDB(FetchMatchesContext context) {
         try {
             ArrayNode docs = mapper.createArrayNode();
 

@@ -1,7 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GetPlayerPuuidsFromCouchDB implements IStep<BuildMatchContext> {
+public class GetPlayerPuuidsFromCouchDB implements IStep<FetchMatchesContext> {
     private final CouchDBClient couchDBClient;
 
     public GetPlayerPuuidsFromCouchDB(CouchDBClient couchDBClient){
@@ -17,7 +17,7 @@ public class GetPlayerPuuidsFromCouchDB implements IStep<BuildMatchContext> {
     }
 
     @Override
-    public void execute(BuildMatchContext context) {
+    public void execute(FetchMatchesContext context) {
         try {
             String urn = "/players/_find";
             String body = """
@@ -38,9 +38,9 @@ public class GetPlayerPuuidsFromCouchDB implements IStep<BuildMatchContext> {
                 System.out.println("Get = " + puuid);
             }
 
-            context.logs.add(new StepLog(response.status(), this, response.message()));
+            context.logs.add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
         } catch (Exception e) {
-            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this, "Exception: "
+            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
                     + e.getMessage()));
             e.printStackTrace();
         }

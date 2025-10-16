@@ -1,6 +1,6 @@
 package com.backendwebsite.DatabaseBuilder.Builder;
 
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Pipeline.Pipeline;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.FetchMatch.*;
@@ -12,15 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class FetchMatchesBuilder implements IBuilder<BuildMatchContext, Object> {
+public class FetchMatchesBuilder implements IBuilder<FetchMatchesContext> {
 
-    private final StepsOrder<BuildMatchContext> steps;
+    private final StepsOrder<FetchMatchesContext> steps;
 
     public FetchMatchesBuilder(GetMatchesFromCouchDBStep getMatchesFromCouchDBStep, PullMatchesFromRiotStep pullMatchesFromRiotStep,
                                GetPlayerPuuidsFromCouchDB getPlayerPuuidsFromCouchDB,
                                DeduplicateMatchesStep deduplicateMatchesStep, UpsertMatchesStep upsertMatchesStep) {
 
-        List<IStep<BuildMatchContext>> stepsList = new ArrayList<>();
+        List<IStep<FetchMatchesContext>> stepsList = new ArrayList<>();
 
         stepsList.add(getPlayerPuuidsFromCouchDB);
         stepsList.add(getMatchesFromCouchDBStep);
@@ -32,16 +32,10 @@ public class FetchMatchesBuilder implements IBuilder<BuildMatchContext, Object> 
 
 
     @Override
-    public void build(BuildMatchContext context) {
+    public void build(FetchMatchesContext context) {
         getMatchesFromRiot(context);
     }
-
-    @Override
-    public Object getResult() {
-        return null;
-    }
-
-    public void getMatchesFromRiot(BuildMatchContext context) {
+    public void getMatchesFromRiot(FetchMatchesContext context) {
         Pipeline.executeSteps(steps, context);
     }
 }

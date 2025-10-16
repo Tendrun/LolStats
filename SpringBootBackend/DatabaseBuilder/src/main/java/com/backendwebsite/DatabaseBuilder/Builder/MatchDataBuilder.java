@@ -57,8 +57,4 @@ public class MatchDataBuilder implements IBuilder {
         }
     }
 */
-    @Override
-    public Object getResult() {
-        return null;
-    }
 }

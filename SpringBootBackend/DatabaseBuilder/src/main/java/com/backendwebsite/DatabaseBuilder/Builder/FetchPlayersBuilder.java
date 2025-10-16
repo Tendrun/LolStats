@@ -1,6 +1,6 @@
 package com.backendwebsite.DatabaseBuilder.Builder;
 
-import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
 import com.backendwebsite.DatabaseBuilder.Pipeline.Pipeline;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.FetchPlayers.*;
@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class FetchPlayersBuilder implements IBuilder<BuildPlayerContext, Object> {
-    private final StepsOrder<BuildPlayerContext> steps;
+public class FetchPlayersBuilder implements IBuilder<FetchPlayersContext> {
+    private final StepsOrder<FetchPlayersContext> steps;
 
     public FetchPlayersBuilder(GetPlayersFromCouchDBStep getPlayersFromCouchDBStep, DeduplicatePlayersStep deduplicatePlayersStep,
                                PullPlayersFromRiotStep pullPlayersFromRiotStep, ValidatePlayersStep validatePlayersStep,
                                UpsertPlayersStep upsertPlayersStep) {
 
-        List<IStep<BuildPlayerContext>> stepsList = new ArrayList<>();
+        List<IStep<FetchPlayersContext>> stepsList = new ArrayList<>();
 
         stepsList.add(getPlayersFromCouchDBStep);
         stepsList.add(pullPlayersFromRiotStep);
@@ -30,16 +30,11 @@ public class FetchPlayersBuilder implements IBuilder<BuildPlayerContext, Object>
     }
 
     @Override
-    public void build(BuildPlayerContext context) {
+    public void build(FetchPlayersContext context) {
         getPlayersFromRiot(context);
     }
 
-    @Override
-    public Object getResult() {
-        return null;
-    }
-
-    public void getPlayersFromRiot(BuildPlayerContext context) {
+    public void getPlayersFromRiot(FetchPlayersContext context) {
         Pipeline.executeSteps(steps, context);
     }
 }

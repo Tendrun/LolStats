@@ -4,14 +4,9 @@ import com.backendwebsite.DatabaseBuilder.Context.BuildChampionAnalyticsContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ChampionAnalyticsBuilder implements IBuilder<BuildChampionAnalyticsContext, Object>{
+public class ChampionAnalyticsBuilder implements IBuilder<BuildChampionAnalyticsContext>{
     @Override
     public void build(BuildChampionAnalyticsContext context) {
 
-    }
-
-    @Override
-    public Object getResult() {
-        return null;
     }
 }

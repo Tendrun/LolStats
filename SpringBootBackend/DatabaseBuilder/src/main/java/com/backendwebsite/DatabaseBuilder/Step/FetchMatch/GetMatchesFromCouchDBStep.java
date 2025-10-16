@@ -1,7 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
@@ -10,10 +10,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-
 @Component
-public class GetMatchesFromCouchDBStep implements IStep<BuildMatchContext> {
+public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
     private final CouchDBClient couchDBClient;
     private final ObjectMapper mapper;
     public GetMatchesFromCouchDBStep(ObjectMapper mapper, CouchDBClient couchDBClient) {
@@ -22,7 +20,7 @@ public class GetMatchesFromCouchDBStep implements IStep<BuildMatchContext> {
     }
 
     @Override
-    public void execute(BuildMatchContext context) {
+    public void execute(FetchMatchesContext context) {
         try {
             String idsJson = mapper.writeValueAsString(context.puuids);
 
@@ -47,9 +45,9 @@ public class GetMatchesFromCouchDBStep implements IStep<BuildMatchContext> {
                 context.existingMatches.put(playerMatches.puuid(), playerMatches);
                 System.out.println("Get = " + playerMatches);
             }
-            context.logs.add(new StepLog(response.status(), this, response.message()));
+            context.logs.add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
         } catch (Exception e) {
-            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this, "Exception: "
+            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
                     + e.getMessage()));
             e.printStackTrace();
         }

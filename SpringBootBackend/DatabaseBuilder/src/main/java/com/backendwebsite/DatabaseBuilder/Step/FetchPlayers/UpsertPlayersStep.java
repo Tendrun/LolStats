@@ -1,7 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Step.FetchPlayers;
 
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
-import com.backendwebsite.DatabaseBuilder.Context.BuildPlayerContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-public class UpsertPlayersStep implements IStep<BuildPlayerContext> {
+public class UpsertPlayersStep implements IStep<FetchPlayersContext> {
 
     CouchDBClient couchDBClient;
     ObjectMapper mapper;
@@ -20,11 +20,11 @@ public class UpsertPlayersStep implements IStep<BuildPlayerContext> {
     }
 
     @Override
-    public void execute(BuildPlayerContext context) {
+    public void execute(FetchPlayersContext context) {
         sendPlayerToCouchDB(context);
     }
 
-    public void sendPlayerToCouchDB(BuildPlayerContext context) {
+    public void sendPlayerToCouchDB(FetchPlayersContext context) {
         try {
             String json = mapper.writeValueAsString(Map.of("docs", context.finalPlayers));
             String urnCouchDB = "/players/_bulk_docs";

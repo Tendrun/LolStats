@@ -1,16 +1,15 @@
 package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Component
-public class DeduplicateMatchesStep implements IStep<BuildMatchContext> {
+public class DeduplicateMatchesStep implements IStep<FetchMatchesContext> {
     private final ObjectMapper mapper;
 
     public DeduplicateMatchesStep(ObjectMapper mapper) {
@@ -18,11 +17,11 @@ public class DeduplicateMatchesStep implements IStep<BuildMatchContext> {
     }
 
     @Override
-    public void execute(BuildMatchContext context) {
+    public void execute(FetchMatchesContext context) {
         deduplicateMatches(context);
     }
 
-    public void deduplicateMatches(BuildMatchContext context) {
+    public void deduplicateMatches(FetchMatchesContext context) {
         for (Map.Entry<String, PlayerMatches> entry : context.fetchedMatches.entrySet()) {
             Set<String> mergedMatchIds = new LinkedHashSet<>();
 

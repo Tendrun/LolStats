@@ -1,20 +1,18 @@
 package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 
 import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
-import com.backendwebsite.DatabaseBuilder.Context.BuildMatchContext;
+import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Component
-public class PullMatchesFromRiotStep implements IStep<BuildMatchContext> {
+public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
     private final RiotApiClient riotApiClient;
     private final ObjectMapper mapper;
 
@@ -24,13 +22,14 @@ public class PullMatchesFromRiotStep implements IStep<BuildMatchContext> {
     }
 
     @Override
-    public void execute(BuildMatchContext context) {
+    public void execute(FetchMatchesContext context) {
         getMatchesFromRiot(context);
     }
 
-    public void getMatchesFromRiot(BuildMatchContext context) {
+    public void getMatchesFromRiot(FetchMatchesContext context) {
         for (String puuid : context.puuids) {
-            String urnRiot = "/lol/match/v5/matches/by-puuid/" + puuid + "/ids";
+            String urnRiot = "/lol/match/v5/matches/by-puuid/" + puuid + "/ids" + "?type=" + context.type  +
+                    "&start=0&count=20";
             RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region.name());
 
             try {

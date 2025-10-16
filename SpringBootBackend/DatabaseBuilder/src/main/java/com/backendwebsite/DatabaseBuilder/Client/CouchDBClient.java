@@ -94,25 +94,25 @@ public class CouchDBClient {
             if (statusCode == 200) {
                 JsonNode body = mapper.readTree(responseBody);
                 System.out.println("CouchDB: Document saved successfully.");
-                return new Response(RequestStatus.SUCCESSFUL, body, "Document get successfully");
+                return new Response(RequestStatus.SUCCESSFUL, body, "CouchDB: Document get successfully");
             }
             else if (statusCode == 201) {
                 System.out.println("CouchDB: Document saved successfully.");
-                return new Response(RequestStatus.SUCCESSFUL, null, "Document get successfully");
+                return new Response(RequestStatus.SUCCESSFUL, null, " CouchDB: Document get successfully");
             }
             else if (statusCode == 409) {
                 System.out.println("CouchDB: Document already exists — skipped.");
-                return new Response(RequestStatus.SKIPPED, null, "Document already exists — skipped.");
+                return new Response(RequestStatus.SKIPPED, null, "CouchDB: Document already exists — skipped.");
             }
             else {
                 System.err.println("CouchDB request failed with status: " + statusCode);
-                return new Response(RequestStatus.FAILED, null, "Document already exists — skipped." +
+                return new Response(RequestStatus.FAILED, null, "CouchDB: Document already exists — skipped." +
                         statusCode);
             }
         }
         catch (Exception e) {
             System.err.println("Unknown CouchDB error: " + e.getMessage());
-            return new Response(RequestStatus.FAILED, null, "Unknown CouchDB error" + statusCode);
+            return new Response(RequestStatus.FAILED, null, "CouchDB: Unknown error" + statusCode);
 
         }
     }
