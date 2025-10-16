@@ -12,10 +12,6 @@ public class FetchPlayersContext implements IContext {
         eun1,
     }
 
-    /// TO DO
-    /// this is ugly
-    /// Change Usage to Player
-
     public final Region region;
     public final String tier, division, queue, page;
     public List<Player> fetchedPlayers = new ArrayList<>();

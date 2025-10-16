@@ -9,11 +9,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GetPlayerMatchIdsFromCouchDBSte implements IStep<FetchMatchDetailsContext> {
+public class GetPlayerMatchIdsFromCouchDBStep implements IStep<FetchMatchDetailsContext> {
 
     private final CouchDBClient couchDBClient;
 
-    public GetPlayerMatchIdsFromCouchDBSte(CouchDBClient couchDBClient){
+    public GetPlayerMatchIdsFromCouchDBStep(CouchDBClient couchDBClient){
         this.couchDBClient = couchDBClient;
     }
 

@@ -2,6 +2,7 @@ package com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails;
 
 import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchDetailsContext;
+import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -32,7 +33,7 @@ public class PullMatchDetailsFromRiotStep implements IStep<FetchMatchDetailsCont
             RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region.name());
 
             try {
-                String matchDetails = mapper.convertValue(response.body(), new TypeReference<>() {});
+                MatchDTO matchDetails = mapper.convertValue(response.body(), new TypeReference<>() {});
                 context.fetchedMatches.add(matchDetails);
                 System.out.println("Get = " + matchDetails);
             } catch (Exception e){

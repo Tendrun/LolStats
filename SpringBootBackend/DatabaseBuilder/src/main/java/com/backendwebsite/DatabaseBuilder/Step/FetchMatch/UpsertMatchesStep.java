@@ -13,7 +13,6 @@ import java.util.Map;
 
 @Component
 public class UpsertMatchesStep implements IStep<FetchMatchesContext> {
-
     CouchDBClient couchDBClient;
     ObjectMapper mapper;
 

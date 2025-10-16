@@ -58,7 +58,7 @@ public class DatabaseController {
     public ResponseEntity getPlayers(@RequestBody GetMatchesRequest req) {
 
         FetchMatchesContext context = new FetchMatchesContext(FetchMatchesContext.Region.valueOf(req.region()),
-                req.playerLimit(), req.type());
+                req.playerLimit(), req.type(), req.tier());
 
         fetchMatchesDirector.startWork(context);
 

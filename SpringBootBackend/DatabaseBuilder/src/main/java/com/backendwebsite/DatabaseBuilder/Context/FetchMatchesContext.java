@@ -18,11 +18,22 @@ public class FetchMatchesContext implements IContext {
         tourney,
         tutorial
     }
+
+    public enum Tier {
+        IRON,
+        BRONZE,
+        SILVER,
+        GOLD,
+        PLATINUM,
+        EMERALD,
+        DIAMOND
+    }
     // TO DO
     // Player Matches need additional fields region, average rank
 
     public int playerLimit;
     public final Region region;
+    public final Tier tier;
     public final Type type;
     public List<String> puuids = new ArrayList<>();
     public HashMap<String, PlayerMatches> existingMatches = new HashMap<>();
@@ -30,9 +41,10 @@ public class FetchMatchesContext implements IContext {
     public List<PlayerMatches> finalPlayerMatches = new ArrayList<>();
     public List<StepLog> logs = new ArrayList<>();
 
-    public FetchMatchesContext(Region region, int playerLimit, Type type) {
+    public FetchMatchesContext(Region region, int playerLimit, Type type, Tier tier) {
         this.region = region;
         this.playerLimit = playerLimit;
         this.type = type;
+        this.tier = tier;
     }
 }

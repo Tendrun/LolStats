@@ -1,14 +1,23 @@
 package com.backendwebsite.DatabaseBuilder.Context;
 
+import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class FetchMatchDetailsContext implements IContext {
-    public List<String> matchIds = new ArrayList<>();
+
+    public enum teamPosition {
+        TOP,
+        JUNGLE,
+        MIDDLE,
+        BOTTOM,
+        UTILITY
+    }
+
+    public Set<String> matchIds = new LinkedHashSet<>();
     public List<StepLog> logs = new ArrayList<>();
-    public List<String> fetchedMatches = new ArrayList<>();
+    public List<MatchDTO> fetchedMatches = new ArrayList<>();
     public enum Region {
         europe
     }

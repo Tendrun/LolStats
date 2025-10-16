@@ -22,13 +22,17 @@ public class GetPlayerPuuidsFromCouchDB implements IStep<FetchMatchesContext> {
             String urn = "/players/_find";
             String body = """
             {
-              "selector": {},
+              "selector": {
+                "tier": {
+                  "$eq": "%s"
+                }
+              },
               "fields": [
                 "puuid"
               ],
               "limit": %d
             }
-            """.formatted(context.playerLimit);
+            """.formatted(context.tier , context.playerLimit);
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
 
