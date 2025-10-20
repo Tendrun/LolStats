@@ -5,9 +5,11 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MatchDTO {
+
     public String _id;
     public Metadata metadata;
     public Info info;
+
 
     public MatchDTO(Metadata metadata, Info info) {
         this.metadata = metadata;
@@ -32,11 +34,15 @@ public class MatchDTO {
         public List<Participant> participants;
         public String platformId;
         public Integer queueId;
-        public Info(String gameVersion, List<Participant> participants, String platformId, Integer queueId) {
+        public List<Teams> teams;
+
+        public Info(String gameVersion, List<Participant> participants, String platformId, Integer queueId,
+                    List<Teams> teams) {
             this.gameVersion = gameVersion;
             this.participants = participants;
             this.platformId = platformId;
             this.queueId = queueId;
+            this.teams = teams;
         }
     }
 
@@ -123,6 +129,25 @@ public class MatchDTO {
             this.var1 = var1;
             this.var2 = var2;
             this.var3 = var3;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Teams {
+        public List<Bans> bans;
+        public Teams(List<Bans> bans){
+            this.bans = bans;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Bans {
+        public int championId;
+        public int pickTurn;
+
+        public Bans(int championId, int pickTurn) {
+            this.championId = championId;
+            this.pickTurn = pickTurn;
         }
     }
 }

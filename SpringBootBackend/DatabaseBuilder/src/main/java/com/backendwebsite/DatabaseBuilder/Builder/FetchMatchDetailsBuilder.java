@@ -19,13 +19,13 @@ public class FetchMatchDetailsBuilder implements IBuilder<FetchMatchDetailsConte
                                     UpsertMatchDetailsStep upsertMatchDetailsStep,
                                     DeduplicateMatchDetailsStep deduplicateMatchDetailsStep,
                                     ValidateMatchDetailsStep validateMatchDetailsStep,
-                                    GetMatchDetailsCouchDB getMatchDetailsCouchDB) {
+                                    GetMatchDetailsCouchDBStep getMatchDetailsCouchDBStep) {
 
         List<IStep<FetchMatchDetailsContext>> stepsList = new ArrayList<>();
 
         stepsList.add(getPlayerMatchIdsFromCouchDBStep);
         stepsList.add(fetchMatchDetailsRiotStep);
-        stepsList.add(getMatchDetailsCouchDB);
+        stepsList.add(getMatchDetailsCouchDBStep);
         stepsList.add(validateMatchDetailsStep);
         stepsList.add(deduplicateMatchDetailsStep);
         stepsList.add(upsertMatchDetailsStep);
@@ -39,5 +39,4 @@ public class FetchMatchDetailsBuilder implements IBuilder<FetchMatchDetailsConte
     public void getMatchesDetailsFromRiot(FetchMatchDetailsContext context) {
         Pipeline.executeSteps(steps, context);
     }
-
 }

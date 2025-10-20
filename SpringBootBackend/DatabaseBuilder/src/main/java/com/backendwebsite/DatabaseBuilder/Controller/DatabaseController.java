@@ -1,7 +1,9 @@
 package com.backendwebsite.DatabaseBuilder.Controller;
 
+import com.backendwebsite.DatabaseBuilder.Context.BuildChampionAnalyticsContext;
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchDetailsContext;
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
+import com.backendwebsite.DatabaseBuilder.DTO.AppApi.AnaliseMatches.GetAnaliseMatchesRequest;
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.Match.GetMatchesRequest;
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.MatchDetails.GetMatchDetailsRequest;
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.Player.GetPlayersRequest;
@@ -66,11 +68,21 @@ public class DatabaseController {
     }
 
     @GetMapping("/FetchMatchDetails")
-    public ResponseEntity analiseMatches(@RequestBody GetMatchDetailsRequest req) {
+    public ResponseEntity FetchMatchDetails(@RequestBody GetMatchDetailsRequest req) {
 
         FetchMatchDetailsContext context = new FetchMatchDetailsContext(req.playerMatchLimit(), req.region());
 
         fetchMatchDetailsDirector.startWork(context);
+
+        return ResponseEntity.ok(context.logs);
+    }
+
+    @GetMapping("/AnaliseMatches")
+    public ResponseEntity analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
+
+        BuildChampionAnalyticsContext context = new BuildChampionAnalyticsContext(req.limitMatches());
+
+        championAnalyticsDirector.startWork(context);
 
         return ResponseEntity.ok(context.logs);
     }
