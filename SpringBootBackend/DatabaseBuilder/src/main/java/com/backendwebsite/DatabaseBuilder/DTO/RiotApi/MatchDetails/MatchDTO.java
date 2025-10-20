@@ -5,6 +5,7 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MatchDTO {
+    public String _id;
     public Metadata metadata;
     public Info info;
 

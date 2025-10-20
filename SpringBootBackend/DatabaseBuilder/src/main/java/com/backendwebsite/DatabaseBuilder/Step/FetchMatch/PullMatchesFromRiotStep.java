@@ -35,7 +35,8 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
             try {
                 List<String> matchIds = mapper.convertValue(response.body(), new TypeReference<>() {});
                 PlayerMatches playerMatches = new PlayerMatches(matchIds, puuid, puuid, "");
-                context.fetchedMatches.put(puuid, playerMatches);
+                String _id = "playerMatches:" + context.region + ":" + puuid;
+                context.fetchedMatches.put(_id, playerMatches);
                 System.out.println("Get = " + playerMatches);
             } catch (Exception e){
                 e.printStackTrace();

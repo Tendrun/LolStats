@@ -44,7 +44,10 @@ public class RiotApiClient {
             } else if (statusCode == 429) {
                 int retry = 0;
 
+                System.err.println("Riot Client: Extended number of API calls, retry will occur");
                 while(retry < 2) {
+
+                    System.err.println("Retry:" + retry);
                     Thread.sleep(120000);
 
                     request = communicationFactory.createRequest(urn, region);

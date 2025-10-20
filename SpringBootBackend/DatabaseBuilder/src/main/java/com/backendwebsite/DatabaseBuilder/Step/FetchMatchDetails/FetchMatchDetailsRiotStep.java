@@ -3,21 +3,18 @@ package com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails;
 import com.backendwebsite.DatabaseBuilder.Client.RiotApiClient;
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchDetailsContext;
 import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
-import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 
 @Component
-public class PullMatchDetailsFromRiotStep implements IStep<FetchMatchDetailsContext> {
+public class FetchMatchDetailsRiotStep implements IStep<FetchMatchDetailsContext> {
     private final RiotApiClient riotApiClient;
     private final ObjectMapper mapper;
 
-    PullMatchDetailsFromRiotStep(RiotApiClient riotApiClient, ObjectMapper mapper){
+    FetchMatchDetailsRiotStep(RiotApiClient riotApiClient, ObjectMapper mapper){
         this.riotApiClient = riotApiClient;
         this.mapper = mapper;
     }
@@ -34,7 +31,7 @@ public class PullMatchDetailsFromRiotStep implements IStep<FetchMatchDetailsCont
 
             try {
                 MatchDTO matchDetails = mapper.convertValue(response.body(), new TypeReference<>() {});
-                context.fetchedMatches.add(matchDetails);
+                context.fetchedMatchDetails.add(matchDetails);
                 System.out.println("Get = " + matchDetails);
             } catch (Exception e){
                 e.printStackTrace();

@@ -38,7 +38,8 @@ public class DeduplicateMatchesStep implements IStep<FetchMatchesContext> {
             mergedMatchIds.addAll(fetchedList);
 
             String puuid = entry.getValue().puuid();
-            PlayerMatches playerMatches = new PlayerMatches(mergedMatchIds.stream().toList(), puuid, puuid, rev);
+            String _id = "playerMatches:" + context.region + ":" + puuid;
+            PlayerMatches playerMatches = new PlayerMatches(mergedMatchIds.stream().toList(), puuid, _id, rev);
             context.finalPlayerMatches.add(playerMatches);
         }
     }

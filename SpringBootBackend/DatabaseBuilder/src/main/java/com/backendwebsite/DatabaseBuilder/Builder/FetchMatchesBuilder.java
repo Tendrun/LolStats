@@ -2,6 +2,8 @@ package com.backendwebsite.DatabaseBuilder.Builder;
 
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Pipeline.Pipeline;
+import com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails.ValidateMatchDetailsStep;
+import com.backendwebsite.DatabaseBuilder.Step.FetchPlayers.ValidatePlayersStep;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.FetchMatch.*;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;

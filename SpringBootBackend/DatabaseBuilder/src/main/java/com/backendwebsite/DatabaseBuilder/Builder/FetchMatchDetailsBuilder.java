@@ -2,9 +2,7 @@ package com.backendwebsite.DatabaseBuilder.Builder;
 
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchDetailsContext;
 import com.backendwebsite.DatabaseBuilder.Pipeline.Pipeline;
-import com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails.GetPlayerMatchIdsFromCouchDBStep;
-import com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails.PullMatchDetailsFromRiotStep;
-import com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails.UpsertMatchDetailsStep;
+import com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails.*;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import org.springframework.stereotype.Component;
@@ -16,14 +14,20 @@ import java.util.List;
 public class FetchMatchDetailsBuilder implements IBuilder<FetchMatchDetailsContext> {
     private final StepsOrder<FetchMatchDetailsContext> steps;
 
-    public FetchMatchDetailsBuilder(PullMatchDetailsFromRiotStep pullMatchDetailsFromRiotStep,
-                                    GetPlayerMatchIdsFromCouchDBStep getPlayerMatchIdsFromCouchDBSte,
-                                    UpsertMatchDetailsStep upsertMatchDetailsStep) {
+    public FetchMatchDetailsBuilder(FetchMatchDetailsRiotStep fetchMatchDetailsRiotStep,
+                                    GetPlayerMatchIdsFromCouchDBStep getPlayerMatchIdsFromCouchDBStep,
+                                    UpsertMatchDetailsStep upsertMatchDetailsStep,
+                                    DeduplicateMatchDetailsStep deduplicateMatchDetailsStep,
+                                    ValidateMatchDetailsStep validateMatchDetailsStep,
+                                    GetMatchDetailsCouchDB getMatchDetailsCouchDB) {
 
         List<IStep<FetchMatchDetailsContext>> stepsList = new ArrayList<>();
 
-        stepsList.add(getPlayerMatchIdsFromCouchDBSte);
-        stepsList.add(pullMatchDetailsFromRiotStep);
+        stepsList.add(getPlayerMatchIdsFromCouchDBStep);
+        stepsList.add(fetchMatchDetailsRiotStep);
+        stepsList.add(getMatchDetailsCouchDB);
+        stepsList.add(validateMatchDetailsStep);
+        stepsList.add(deduplicateMatchDetailsStep);
         stepsList.add(upsertMatchDetailsStep);
         this.steps = new StepsOrder<>(stepsList);
     }

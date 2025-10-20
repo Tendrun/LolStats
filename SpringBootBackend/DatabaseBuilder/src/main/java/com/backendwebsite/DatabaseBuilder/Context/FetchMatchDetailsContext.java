@@ -17,7 +17,11 @@ public class FetchMatchDetailsContext implements IContext {
 
     public Set<String> matchIds = new LinkedHashSet<>();
     public List<StepLog> logs = new ArrayList<>();
-    public List<MatchDTO> fetchedMatches = new ArrayList<>();
+    public List<MatchDTO> existingMatchDetails = new ArrayList<>();
+    public List<MatchDTO> validatedMatchDetails = new ArrayList<>();
+    public List<MatchDTO> fetchedMatchDetails = new ArrayList<>();
+    public List<MatchDTO> finalMatchDetails = new ArrayList<>();
+
     public enum Region {
         europe
     }
