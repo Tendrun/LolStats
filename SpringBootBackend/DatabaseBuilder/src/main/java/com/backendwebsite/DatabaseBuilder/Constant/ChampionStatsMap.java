@@ -1,5 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Constant;
 
+import lombok.Getter;
+
 import java.util.*;
 
 public class ChampionStatsMap {
@@ -190,17 +192,22 @@ public class ChampionStatsMap {
     }
 
     public static class ChampionDetails {
-        public int Id;
+        public String _id;
+        public String _rev;
+        public int championId;
         public String name;
-        public float winRate;
-        public float banRate;
-        public float pickRate;
+        @Getter
+        private float winRate;
+        @Getter
+        private float banRate;
+        @Getter
+        private float pickRate;
         public int totalMatchesPicked;
         public int wonMatches;
         public int bannedMatches;
 
-        public ChampionDetails(int Id, String name) {
-            this.Id = Id;
+        public ChampionDetails(int championId, String name) {
+            this.championId = championId;
             this.name = name;
             this.winRate = 0.0f;
             this.banRate = 0.0f;
@@ -210,9 +217,9 @@ public class ChampionStatsMap {
             this.bannedMatches = 0;
         }
 
-        public ChampionDetails(int Id, String name, float winRate, float banRate, float pickRate,
+        public ChampionDetails(int championId, String name, float winRate, float banRate, float pickRate,
                                int totalMatchesPicked, int wonMatches, int bannedMatches) {
-            this.Id = Id;
+            this.championId = championId;
             this.name = name;
             this.winRate = winRate;
             this.banRate = banRate;
@@ -220,6 +227,18 @@ public class ChampionStatsMap {
             this.totalMatchesPicked = totalMatchesPicked;
             this.wonMatches = wonMatches;
             this.bannedMatches = bannedMatches;
+        }
+
+        public void setWinRate(float winRate) {
+            this.winRate = (float) (Math.floor(winRate * 10000) / 100);
+        }
+
+        public void setBanRate(float banRate) {
+            this.banRate = (float) (Math.floor(banRate * 10000) / 100);
+        }
+
+        public void setPickRate(float pickRate) {
+            this.pickRate = (float) (Math.floor(pickRate * 10000) / 100);
         }
     }
 }

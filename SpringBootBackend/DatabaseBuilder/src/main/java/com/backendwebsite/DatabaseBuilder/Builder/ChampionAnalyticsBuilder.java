@@ -4,6 +4,7 @@ import com.backendwebsite.DatabaseBuilder.Context.BuildChampionAnalyticsContext;
 import com.backendwebsite.DatabaseBuilder.Pipeline.Pipeline;
 import com.backendwebsite.DatabaseBuilder.Step.ChampionAnalytics.CalculateChampStatsStep;
 import com.backendwebsite.DatabaseBuilder.Step.ChampionAnalytics.GetMatchDetailsFromCouchDBStep;
+import com.backendwebsite.DatabaseBuilder.Step.ChampionAnalytics.UpsertChampStatsStep;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import org.springframework.stereotype.Component;
@@ -17,12 +18,14 @@ public class ChampionAnalyticsBuilder implements IBuilder<BuildChampionAnalytics
     private final StepsOrder<BuildChampionAnalyticsContext> steps;
 
     public ChampionAnalyticsBuilder(GetMatchDetailsFromCouchDBStep getMatchDetailsFromCouchDBStep,
-                                    CalculateChampStatsStep calculateChampStatsStep) {
+                                    CalculateChampStatsStep calculateChampStatsStep,
+                                    UpsertChampStatsStep UpsertChampStatsStep) {
 
         List<IStep<BuildChampionAnalyticsContext>> stepsList = new ArrayList<>();
 
         stepsList.add(getMatchDetailsFromCouchDBStep);
         stepsList.add(calculateChampStatsStep);
+        stepsList.add(UpsertChampStatsStep);
 
         this.steps = new StepsOrder<>(stepsList);
     }
