@@ -1,12 +1,29 @@
 import { useParams } from "react-router-dom";
 import { RUNESCATEGORIES } from "../../constants/runesMapping";
+import "./ChampionDetail.css";
+import { useQuery } from "@tanstack/react-query";
+
 
 export default function ChampionDetail() {
   const { id } = useParams();
 
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["champion", id],
+    queryFn: fetchChampion,
+    refetchOnWindowFocus: true,
+    retry: 1,
+  });
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Champion Detail Page for Champion ID: {id}</h2>
+    <div>
+      <h2>Champion Detail Page for Champion Name: {id}</h2>
+
+      <div className="ContainerWrapper">
+        <div className="StatContainer">📊 Stat 1</div>
+        <div className="StatContainer">⚔️ Stat 2</div>
+        <div className="StatContainer">🏆 Stat 3</div>
+      </div>
+
 
       {Object.entries(RUNESCATEGORIES).map(([categoryKey, subcategories]) => (
         <div key={categoryKey} style={{ marginBottom: "40px" }}>
