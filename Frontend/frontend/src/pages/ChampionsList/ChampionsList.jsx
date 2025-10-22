@@ -1,4 +1,5 @@
 import ChampionTable from "./ChampionTable";
+import { useQuery } from '@tanstack/react-query';
 
 function Champions() {
   const { data: champions = [], error, isLoading } = useQuery({

@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint --max-warnings=0 src",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@nabla/vite-plugin-eslint": "^2.0.6",
     "@tanstack/react-query": "^5.90.5",
     "chart.js": "^4.5.0",
     "react": "^19.0.0",
@@ -24,12 +25,14 @@
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.21.0",
+    "eslint": "^9.38.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2",
     "vite": "^6.2.0",
+    "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-svgr": "^4.5.0"
   }
 }

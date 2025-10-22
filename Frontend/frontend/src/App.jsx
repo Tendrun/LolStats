@@ -3,11 +3,9 @@ import Navbar from "./components/Navbar/Navbar.jsx";
 import "./App.css";
 import Champions from "./pages/ChampionsList/ChampionsList.jsx";
 import CampionDetail from "./pages/ChampionDetail/[index].tsx";
-import { useEffect, useState } from "react";
 import {
   QueryClient,
   QueryClientProvider,
-  useQuery,
 } from '@tanstack/react-query'
 
 const queryClient = new QueryClient()
