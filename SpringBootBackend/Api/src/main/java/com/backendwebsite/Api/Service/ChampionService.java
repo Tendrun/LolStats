@@ -1,6 +1,8 @@
 package com.backendwebsite.Api.Service;
 
 import com.backendwebsite.Api.DTO.ChampionDetails.ChampionDetailsResponse;
+import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
+import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
@@ -20,57 +22,29 @@ import static com.backendwebsite.Helper.KeysLoader.loadSecretValue;
 
 @Service
 public class ChampionService {
+    private final CouchDBClient couchDBClient;
+    private final ObjectMapper mapper;
 
-    private final String couchDbUrl;
-
-    public ChampionService() {
-        this.couchDbUrl = loadSecretValue("COUCHDB_URL");
+    public ChampionService(CouchDBClient couchDBClient, ObjectMapper mapper) {
+        this.couchDBClient = couchDBClient;
+        this.mapper = mapper;
     }
 
     public List<ChampionDetailsResponse> getAllChampDetailsFromCouchDB() {
         List<ChampionDetailsResponse> championDetailsList = new ArrayList<>();
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            String URL = couchDbUrl + "/championdetails/_all_docs?include_docs=true";
-            String auth = "admin:admin";
-            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
 
-            // GET dla _rev
-            HttpGet getChampionsDetails = new HttpGet(URL);
-            getChampionsDetails.setHeader("Authorization", "Basic " + encodedAuth);
-            HttpResponse response = httpClient.execute(getChampionsDetails);
+        String urn = "/championdetails/_all_docs?include_docs=true";
 
+        CouchDBClient.Response response = couchDBClient.sendGet(urn);
 
-            String json = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))
-                    .lines()
-                    .collect(Collectors.joining());
-
-            System.out.println(json);
-            if (response.getStatusLine().getStatusCode() != 201) {
-                System.err.println("Failed to save match: " + response.getStatusLine());
-            }
-
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(json);
-
-            JsonNode rows = root.get("rows");
-            for (JsonNode row : rows) {
+        try {
+            for (JsonNode row : response.body().get("rows")) {
                 JsonNode doc = row.get("doc");
-
-                int championID = doc.get("_id").asInt();
-                String championName = doc.get("championName").asText();
-                float winRate = doc.get("winRate").floatValue();
-                float banRate = doc.get("banRate").floatValue();
-                float pickRate = doc.get("pickRate").floatValue();
-                int totalMatchesPicked = doc.get("totalMatchesPicked").asInt();
-                int wonMatches = doc.get("wonMatches").asInt();
-                int bannedMatches = doc.get("bannedMatches").asInt();
-
-                ChampionDetailsResponse championDetailsResponse = new ChampionDetailsResponse(championID, championName, winRate, banRate,
-                        pickRate, totalMatchesPicked, wonMatches, bannedMatches);
-                championDetailsList.add(championDetailsResponse);
+                ChampionDetailsResponse championDetails = mapper.treeToValue(doc, ChampionDetailsResponse.class);
+                championDetailsList.add(championDetails);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch(Exception e) {
+            e.printStackTrace();
         }
 
         return championDetailsList;

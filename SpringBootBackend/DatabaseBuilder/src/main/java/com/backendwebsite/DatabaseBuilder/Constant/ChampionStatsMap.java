@@ -1,5 +1,7 @@
 package com.backendwebsite.DatabaseBuilder.Constant;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 
 import java.util.*;
@@ -185,12 +187,8 @@ public class ChampionStatsMap {
         CHAMPION_MAP_INTERNAL.add(new ChampionDetails(26, "Zilean"));
         CHAMPION_MAP_INTERNAL.add(new ChampionDetails(142, "Zoe"));
         CHAMPION_MAP_INTERNAL.add(new ChampionDetails(143, "Zyra"));
-
-
-        /// UNKNOWN SITUATIONS
-        CHAMPION_MAP_INTERNAL.add(new ChampionDetails(3151, "Unknown"));
     }
-
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ChampionDetails {
         public String _id;
         public String _rev;
@@ -216,7 +214,7 @@ public class ChampionStatsMap {
             this.wonMatches = 0;
             this.bannedMatches = 0;
         }
-
+        @JsonCreator
         public ChampionDetails(int championId, String name, float winRate, float banRate, float pickRate,
                                int totalMatchesPicked, int wonMatches, int bannedMatches) {
             this.championId = championId;

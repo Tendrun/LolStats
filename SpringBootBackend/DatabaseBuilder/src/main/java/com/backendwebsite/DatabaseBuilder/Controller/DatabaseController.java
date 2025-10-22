@@ -12,10 +12,7 @@ import com.backendwebsite.DatabaseBuilder.Director.FetchMatchDetailsDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchMatchesDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchPlayersDirector;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
 
 @RestController
@@ -38,7 +35,7 @@ public class DatabaseController {
     }
 
 
-    @GetMapping("/FetchPlayers")
+    @PostMapping("/FetchPlayers")
     public ResponseEntity getPlayers(@RequestBody GetPlayersRequest req) {
 
         FetchPlayersContext context = new FetchPlayersContext(
@@ -56,7 +53,7 @@ public class DatabaseController {
         return ResponseEntity.ok("");
     }
 
-    @GetMapping("/FetchMatches")
+    @PostMapping("/FetchMatches")
     public ResponseEntity getPlayers(@RequestBody GetMatchesRequest req) {
 
         FetchMatchesContext context = new FetchMatchesContext(FetchMatchesContext.Region.valueOf(req.region()),
@@ -67,7 +64,7 @@ public class DatabaseController {
         return ResponseEntity.ok("");
     }
 
-    @GetMapping("/FetchMatchDetails")
+    @PostMapping("/FetchMatchDetails")
     public ResponseEntity FetchMatchDetails(@RequestBody GetMatchDetailsRequest req) {
 
         FetchMatchDetailsContext context = new FetchMatchDetailsContext(req.playerMatchLimit(), req.region());
@@ -77,7 +74,7 @@ public class DatabaseController {
         return ResponseEntity.ok(context.logs);
     }
 
-    @GetMapping("/AnaliseMatches")
+    @PostMapping("/AnaliseMatches")
     public ResponseEntity analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
 
         BuildChampionAnalyticsContext context = new BuildChampionAnalyticsContext(req.limitMatches());

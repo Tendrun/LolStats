@@ -79,7 +79,7 @@ public class RiotApiClient {
                 return new Response(RequestStatus.FAILED, body);
             }
         } catch (Exception e) {
-            System.err.println("Unknown error" + e.getMessage());
+            System.err.println("Unknown error: " + e.getMessage());
             return new Response(RequestStatus.FAILED, null);
         }
     }

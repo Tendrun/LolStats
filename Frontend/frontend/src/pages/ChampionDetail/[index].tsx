@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { RUNESCATEGORIES } from "../../constants/runesMapping";
-import "./ChampionDetail.css";
+import './ChampionDetail.css';
 import { useQuery } from "@tanstack/react-query";
 
 

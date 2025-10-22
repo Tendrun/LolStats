@@ -1,22 +1,19 @@
-import { useEffect, useState } from "react";
 import ChampionTable from "./ChampionTable";
 
+function Champions() {
+  const { data: champions = [], error, isLoading } = useQuery({
+    queryKey: ['champions'],
+    queryFn: async () => {
+      const res = await fetch('http://localhost:4021/api/data/getChampions')
+      if (!res.ok) throw new Error('Network response was not ok')
+      return res.json()
+    },
+  })
 
-  function Champions() {
-    const [champions, setChampions] = useState([]);
+  if (isLoading) return <p>Loading...</p>
+  if (error) return <p>Error: {error.message}</p>
 
-    useEffect(() => {
-      fetch("/champions.json")
-      .then((res) => res.json())
-      .then((data) => setChampions(data))
-      .catch((err) => console.error("Failed to load champions:", err));
-  }, []);
-
-  return (
-    <ChampionTable champions={champions} />
-  );
+  return <ChampionTable champions={champions} />
 }
 
-  
 export default Champions;
-  

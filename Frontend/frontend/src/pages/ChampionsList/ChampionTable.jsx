@@ -3,6 +3,9 @@ import './ChampionTable.css';
 import { Navigate, useNavigate } from "react-router-dom";
 
 export default function ChampionTable({ champions }) {
+    console.log("🔍 ChampionTable props:", champions);
+
+
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 

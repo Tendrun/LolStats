@@ -3,6 +3,7 @@ package com.backendwebsite.DatabaseBuilder.Step.ChampionAnalytics;
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
 import com.backendwebsite.DatabaseBuilder.Constant.ChampionStatsMap.ChampionDetails;
 import com.backendwebsite.DatabaseBuilder.Context.BuildChampionAnalyticsContext;
+import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,10 +30,12 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
     public void execute(BuildChampionAnalyticsContext context) {
         try {
             ArrayNode docs = mapper.createArrayNode();
-/*
-            String championIds = context.championStatsMap.CHAMPION_MAP.stream()
-                .map(championDetails -> championDetails.name + ":" + championDetails.championId)
-                .collect(Collectors.joining(", "));
+
+            List<String> championIds = context.championStatsMap.CHAMPION_MAP.stream()
+                    .map(championDetails -> championDetails.name + ":" + championDetails.championId)
+                    .collect(Collectors.toList());
+
+            String normalizedChampionIds = mapper.writeValueAsString(championIds);
 
             String urn = "/championdetails/_find";
             String body = """
@@ -43,18 +47,19 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
               },
               "limit": 999999
             }
-            """.formatted(championIds);
+            """.formatted(normalizedChampionIds);
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
-            JsonNode row = response.body().get("docs");
 
             for (JsonNode row : response.body().get("docs")) {
-                PlayerMatches playerMatches = mapper.treeToValue(row, PlayerMatches.class);
+                ChampionDetails championDetailCouchDb = mapper.treeToValue(row, ChampionDetails.class);
 
-                context.existingMatches.put(playerMatches.puuid(), playerMatches);
-                System.out.println("Get = " + playerMatches);
+                context.championStatsMap.CHAMPION_MAP.stream()
+                        .filter(championDetail -> championDetail.championId == championDetailCouchDb.championId)
+                        .findFirst()
+                        .ifPresent(championDetail -> championDetail._rev = championDetailCouchDb._rev);
             }
-*/
+
             for (ChampionDetails championDetails : context.championStatsMap.CHAMPION_MAP) {
                 championDetails._id = championDetails.name + ":" + championDetails.championId;
                 ObjectNode doc = mapper.valueToTree(championDetails);
