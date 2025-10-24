@@ -9,7 +9,6 @@ export default function ChampionDetail() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["champion", id],
-    queryFn: fetchChampion,
     refetchOnWindowFocus: true,
     retry: 1,
   });
