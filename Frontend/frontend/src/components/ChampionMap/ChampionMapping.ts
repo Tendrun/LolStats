@@ -10,7 +10,7 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Annie": "Annie.png",
     "Aphelios": "Aphelios.png",
     "Ashe": "Ashe.png",
-    "Aurelion Sol": "Aurelion Sol.png",
+    "Aurelion Sol": "AurelionSol.png",
     "Aurora": "Aurora.png",
     "Azir": "Azir.png",
     "Bard": "Bard.png",
@@ -22,12 +22,12 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Caitlyn": "Caitlyn.png",
     "Camille": "Camille.png",
     "Cassiopeia": "Cassiopeia.png",
-    "Cho'Gath": "Cho'Gath.png",
+    "Cho'Gath": "Chogath.png",
     "Corki": "Corki.png",
     "Darius": "Darius.png",
     "Diana": "Diana.png",
     "Draven": "Draven.png",
-    "Dr. Mundo": "Dr. Mundo.png",
+    "Dr. Mundo": "DrMundo.png",
     "Ekko": "Ekko.png",
     "Elise": "Elise.png",
     "Evelynn": "Evelynn.png",
@@ -49,12 +49,12 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Irelia": "Irelia.png",
     "Ivern": "Ivern.png",
     "Janna": "Janna.png",
-    "Jarvan IV": "Jarvan IV.png",
+    "Jarvan IV": "JarvanIV.png",
     "Jax": "Jax.png",
     "Jayce": "Jayce.png",
     "Jhin": "Jhin.png",
     "Jinx": "Jinx.png",
-    "Kai'Sa": "Kai'Sa.png",
+    "Kai'Sa": "Kaisa.png",
     "Kalista": "Kalista.png",
     "Karma": "Karma.png",
     "Karthus": "Karthus.png",
@@ -63,13 +63,13 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Kayle": "Kayle.png",
     "Kayn": "Kayn.png",
     "Kennen": "Kennen.png",
-    "Kha'Zix": "Kha'Zix.png",
+    "Kha'Zix": "KhaZix.png",
     "Kindred": "Kindred.png",
     "Kled": "Kled.png",
-    "Kog'Maw": "Kog'Maw.png",
+    "Kog'Maw": "KogMaw.png",
     "K'Sante": "K'Sante.png",
     "LeBlanc": "LeBlanc.png",
-    "Lee Sin": "Lee Sin.png",
+    "Lee Sin": "LeeSin.png",
     "Leona": "Leona.png",
     "Lillia": "Lillia.png",
     "Lissandra": "Lissandra.png",
@@ -79,10 +79,10 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Malphite": "Malphite.png",
     "Malzahar": "Malzahar.png",
     "Maokai": "Maokai.png",
-    "Master Yi": "Master Yi.png",
+    "Master Yi": "MasterYi.png",
     "Mel": "Mel.png",
     "Milio": "Milio.png",
-    "Miss Fortune": "Miss Fortune.png",
+    "Miss Fortune": "MissFortune.png",
     "Wukong": "Wukong.png",
     "Mordekaiser": "Mordekaiser.png",
     "Morgana": "Morgana.png",
@@ -94,7 +94,7 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Nidalee": "Nidalee.png",
     "Nilah": "Nilah.png",
     "Nocturne": "Nocturne.png",
-    "Nunu & Willump": "Nunu & Willump.png",
+    "Nunu & Willump": "Nunu.png",
     "Olaf": "Olaf.png",
     "Orianna": "Orianna.png",
     "Ornn": "Ornn.png",
@@ -131,7 +131,7 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Swain": "Swain.png",
     "Sylas": "Sylas.png",
     "Syndra": "Syndra.png",
-    "Tahm Kench": "Tahm Kench.png",
+    "Tahm Kench": "TahmKench.png",
     "Taliyah": "Taliyah.png",
     "Talon": "Talon.png",
     "Taric": "Taric.png",
@@ -140,14 +140,14 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Tristana": "Tristana.png",
     "Trundle": "Trundle.png",
     "Tryndamere": "Tryndamere.png",
-    "Twisted Fate": "Twisted Fate.png",
+    "Twisted Fate": "TwistedFate.png",
     "Twitch": "Twitch.png",
     "Udyr": "Udyr.png",
     "Urgot": "Urgot.png",
     "Varus": "Varus.png",
     "Vayne": "Vayne.png",
     "Veigar": "Veigar.png",
-    "Vel'Koz": "Vel'Koz.png",
+    "Vel'Koz": "VelKoz.png",
     "Vex": "Vex.png",
     "Vi": "Vi.png",
     "Viego": "Viego.png",
@@ -157,7 +157,7 @@ export const CHAMPION_IMAGE_MAP: Record<string, string> = {
     "Warwick": "Warwick.png",
     "Xayah": "Xayah.png",
     "Xerath": "Xerath.png",
-    "Xin Zhao": "Xin Zhao.png",
+    "Xin Zhao": "XinZhao.png",
     "Yasuo": "Yasuo.png",
     "Yone": "Yone.png",
     "Yorick": "Yorick.png",
@@ -178,9 +178,16 @@ export interface ChampionStats {
     image: string;
     role: string;
     tier: string;
-    winRate: string | number;
-    pickRate: string | number;
-    banRate: string | number;
+    winRate: string;
+    pickRate: string;
+    banRate: string;
     counterPicks: string[];
     matches: number;
+}
+
+export function mapChampionsWithImages(champions: ChampionStats[]): ChampionStats[] {
+  return champions.map(champ => ({
+    ...champ,
+    image: CHAMPION_IMAGE_MAP[champ.name],
+  }));
 }
