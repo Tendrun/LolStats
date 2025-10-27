@@ -1,4 +1,4 @@
-import ChampionTable from "./ChampionTable";
+import ChampionTable from "./ChampionTable.jsx";
 import { useQuery } from '@tanstack/react-query';
 import { mapChampionsWithImages, ChampionStats } from "../../components/ChampionMap/ChampionMapping";
 

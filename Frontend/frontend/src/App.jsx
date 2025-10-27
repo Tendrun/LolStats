@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar/Navbar.jsx";
 import "./App.css";
 import Champions from "./pages/ChampionsList/ChampionsList.jsx";
 import CampionDetail from "./pages/ChampionDetail/[index].tsx";
+import ChampionDashboard from "./pages/ChampionDashboard/ChampionDashboard.jsx";
 import {
   QueryClient,
   QueryClientProvider,
@@ -24,6 +25,7 @@ function App() {
         <Routes>
           <Route path="/Champions" element={<Champions />} />
           <Route path="/ChampionDetail/:id" element={<CampionDetail />} />
+          <Route path="/ChampionDashboard" element={<ChampionDashboard />} />
         </Routes>
       </div>
     </div>
