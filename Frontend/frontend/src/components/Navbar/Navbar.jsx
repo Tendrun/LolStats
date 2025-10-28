@@ -8,7 +8,7 @@ export default function Navbar() {
         <Link to="/" className="nav-logo">LoL Stats</Link>
         <ul className="nav-links">
           <li><Link to="/champions">Champions</Link></li>
-          <li><Link to="/ChampionDashboard">Champions Dashboard</Link></li>
+          <li><Link to="/ChampionDashboard">Champion Dashboard</Link></li>
         </ul>
       </div>
     </nav>

@@ -1,5 +1,4 @@
-import type { runeMapping } from "@/constants/runesMapping";
-import type { rune } from "@/types/rune";
+/*import type { runeMapping } from "@/constants/runesMapping";
 
 export function getRunesByIds(runeIds: number[], runesMapping: Record<number, { id: number; name: string; src: string }>) {
     return runeIds.map((id) => runesMapping[id]).filter((rune) => rune !== undefined);
@@ -18,4 +17,4 @@ function getSecondaryRuneStyle(runeIds: number[], runesMapping: runeMapping) {
 function getStatRunes(runeIds: number[], runesMapping: runeMapping) {
     const statRuneIds = runeIds.slice(5, 8);
     return statRuneIds.map((id) => runesMapping[id]).filter((rune) => rune !== undefined);
-}
+}*/

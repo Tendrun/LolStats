@@ -1,11 +1,8 @@
 import { useState } from "react";
 import './ChampionTable.css';
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function ChampionTable({ champions }) {
-    console.log("🔍 ChampionTable props:", champions);
-
-
   const navigate = useNavigate();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -54,7 +51,7 @@ export default function ChampionTable({ champions }) {
           <th onClick={() => handleSort("pickRate")}>Pick Rate{getSortIndicator("pickRate")}</th>
           <th onClick={() => handleSort("banRate")}>Ban Rate{getSortIndicator("banRate")}</th>
           <th onClick={() => handleSort("counterPicks")}>Counter Picks{getSortIndicator("counterPicks")}</th>
-          <th onClick={() => handleSort("matches")}>Matches{getSortIndicator("matches")}</th>
+          <th onClick={() => handleSort("totalMatchesPicked")}>Matches{getSortIndicator("totalMatchesPicked")}</th>
         </tr>
       </thead>
         <tbody>
@@ -74,11 +71,11 @@ export default function ChampionTable({ champions }) {
               </td>
               <td>{champ.role || "-"}</td>
               <td>{champ.tier || "-"}</td>
-              <td>{champ.winRate || "-"}</td>
-              <td>{champ.pickRate || "-"}</td>
-              <td>{champ.banRate || "-"}</td>
+              <td>{champ.winRate + "%" || "0%"}</td>
+              <td>{champ.pickRate + "%" || "0%"}</td>
+              <td>{champ.banRate + "%" || "0%"}</td>
               <td>{champ.counterPicks?.join(", ") || "-"}</td>
-              <td>{champ.matches || 0}</td>
+              <td>{champ.totalMatchesPicked || 0}</td>
             </tr>
           ))}
         </tbody>

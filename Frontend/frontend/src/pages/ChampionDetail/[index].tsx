@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { RUNESCATEGORIES } from "../../constants/runesMapping";
+import { RUNESCATEGORIES } from '@/constants/runesMapping';
 import './ChampionDetail.css';
 import { useQuery } from "@tanstack/react-query";
 
@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 export default function ChampionDetail() {
   const { id } = useParams();
 
-  const { data, isLoading, isError } = useQuery({
+  useQuery({
     queryKey: ["champion", id],
     refetchOnWindowFocus: true,
     retry: 1,

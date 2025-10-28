@@ -182,7 +182,7 @@ export interface ChampionStats {
     pickRate: string;
     banRate: string;
     counterPicks: string[];
-    matches: number;
+    totalMatchesPicked: number;
 }
 
 export function mapChampionsWithImages(champions: ChampionStats[]): ChampionStats[] {
