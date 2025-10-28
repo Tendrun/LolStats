@@ -68,22 +68,6 @@ out/
 **/src/main/resources/secret/secret.txt
 **/src/main/resources/secret
 
-# ───────────────────────────────
-# ✅ Custom: Ignore Data Dragon files
-# ───────────────────────────────
-
-# Common locations for champion & asset data
-src/public/championicons/
-/public/assets/ddragon/
-/public/ChampionIcons/
-/public/champion-images/
-/public/static-assets/
-/src/assets/ddragon/
-/src/assets/champions/
-/src/assets/*.png
-/src/assets/**/*.png
-
 # Ignore large data files (e.g., Riot JSON dumps)
-*.json
 !package.json
 !vite.config.js
