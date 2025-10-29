@@ -140,7 +140,7 @@ public class CouchDBClient {
         }
         catch (Exception e){
             System.err.println("Unknown CouchDB error: " + e.getMessage());
-            return new Response(RequestStatus.SUCCESSFUL, null, "Unknown Error");
+            return new Response(RequestStatus.FAILED, null, "Unknown Error");
         }
     }
 }

@@ -20,6 +20,7 @@ public class FetchPlayersContext implements IContext {
     public List<Player> finalPlayers = new ArrayList<>();
     public List<StepLog> logs = new ArrayList<>();
 
+
     public FetchPlayersContext(Region region, String tier, String division, String queue, String page) {
         this.region = region; this.tier = tier; this.division = division; this.queue = queue; this.page = page;
     }

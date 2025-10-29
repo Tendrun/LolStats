@@ -11,9 +11,12 @@ import com.backendwebsite.DatabaseBuilder.Director.ChampionAnalyticsDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchMatchDetailsDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchMatchesDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchPlayersDirector;
+import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/database")
@@ -36,7 +39,7 @@ public class DatabaseController {
 
 
     @PostMapping("/FetchPlayers")
-    public ResponseEntity getPlayers(@RequestBody GetPlayersRequest req) {
+    public ResponseEntity<List<StepLog>> getPlayers(@RequestBody GetPlayersRequest req) {
 
         FetchPlayersContext context = new FetchPlayersContext(
                 (FetchPlayersContext.Region.valueOf(req.region())),
@@ -50,22 +53,22 @@ public class DatabaseController {
         // TO DO
         // failed and success logs
 
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok(context.logs);
     }
 
     @PostMapping("/FetchMatches")
-    public ResponseEntity getPlayers(@RequestBody GetMatchesRequest req) {
+    public ResponseEntity<List<StepLog>> getPlayers(@RequestBody GetMatchesRequest req) {
 
         FetchMatchesContext context = new FetchMatchesContext(FetchMatchesContext.Region.valueOf(req.region()),
                 req.playerLimit(), req.type(), req.tier());
 
         fetchMatchesDirector.startWork(context);
 
-        return ResponseEntity.ok("");
+        return ResponseEntity.ok(context.logs);
     }
 
     @PostMapping("/FetchMatchDetails")
-    public ResponseEntity FetchMatchDetails(@RequestBody GetMatchDetailsRequest req) {
+    public ResponseEntity<List<StepLog>> FetchMatchDetails(@RequestBody GetMatchDetailsRequest req) {
 
         FetchMatchDetailsContext context = new FetchMatchDetailsContext(req.playerMatchLimit(), req.region());
 
@@ -75,7 +78,7 @@ public class DatabaseController {
     }
 
     @PostMapping("/AnaliseMatches")
-    public ResponseEntity analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
+    public ResponseEntity<List<StepLog>> analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
 
         BuildChampionAnalyticsContext context = new BuildChampionAnalyticsContext(req.limitMatches());
 

@@ -1,5 +1,8 @@
 package com.backendwebsite.DatabaseBuilder.Domain.Player;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Player {
     public String _id;
     public final String queueType;

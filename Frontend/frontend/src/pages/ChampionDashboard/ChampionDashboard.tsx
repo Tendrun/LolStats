@@ -14,8 +14,6 @@ import { ChampionStats } from "@/components/ChampionMap/ChampionMapping";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// Static constants kept outside component
-const labels = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec"];
 const options = {
   responsive: true,
   scales: { y: { beginAtZero: true } }
@@ -54,7 +52,7 @@ export default function ChampionDashboard() {
     if (!champions || champions.length === 0) {
       // fallback sample data while loading / if no data
       return {
-        labels,
+        ["empty labels"]: [],
         datasets: [
           {
             label: "Brak danych",
