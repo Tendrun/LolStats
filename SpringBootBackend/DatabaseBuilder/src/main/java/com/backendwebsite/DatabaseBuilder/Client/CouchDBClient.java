@@ -94,11 +94,11 @@ public class CouchDBClient {
             if (statusCode == 200) {
                 JsonNode body = mapper.readTree(responseBody);
                 System.out.println("CouchDB: Document saved successfully.");
-                return new Response(RequestStatus.SUCCESSFUL, body, "CouchDB: Document get successfully");
+                return new Response(RequestStatus.SUCCESSFUL, body, "CouchDB: Document post successfully");
             }
             else if (statusCode == 201) {
                 System.out.println("CouchDB: Document saved successfully.");
-                return new Response(RequestStatus.SUCCESSFUL, null, " CouchDB: Document get successfully");
+                return new Response(RequestStatus.SUCCESSFUL, null, " CouchDB: Document post successfully");
             }
             else if (statusCode == 409) {
                 System.out.println("CouchDB: Document already exists — skipped.");

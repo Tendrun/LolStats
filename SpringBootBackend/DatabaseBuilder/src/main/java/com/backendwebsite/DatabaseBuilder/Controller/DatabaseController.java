@@ -12,11 +12,15 @@ import com.backendwebsite.DatabaseBuilder.Director.FetchMatchDetailsDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchMatchesDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchPlayersDirector;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
+import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/database")
@@ -39,7 +43,7 @@ public class DatabaseController {
 
 
     @PostMapping("/FetchPlayers")
-    public ResponseEntity<List<StepLog>> getPlayers(@RequestBody GetPlayersRequest req) {
+    public ResponseEntity<HashMap<String, List<StepLog>>> getPlayers(@RequestBody GetPlayersRequest req) {
 
         FetchPlayersContext context = new FetchPlayersContext(
                 (FetchPlayersContext.Region.valueOf(req.region())),
@@ -50,10 +54,22 @@ public class DatabaseController {
 
         fetchPlayersDirector.startWork(context);
 
-        // TO DO
-        // failed and success logs
+        HashMap<String, List<StepLog>> errorLogs = context.logs.values().stream()
+                .flatMap(List::stream)
+                .filter(log -> log.requestStatus() == StepsOrder.RequestStatus.FAILED)
+                .collect(Collectors.groupingBy(StepLog::stepName, HashMap::new, Collectors.toList()));
 
-        return ResponseEntity.ok(context.logs);
+        HashMap<String, List<StepLog>> result = new HashMap<>();
+        context.logs.keySet().forEach(step -> {
+            if (errorLogs.containsKey(step)) {
+                result.put(step, errorLogs.get(step));
+            } else {
+                result.put(step, new ArrayList<>(List.of(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
+                        step, "All operations successful."))));
+            }
+        });
+
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/FetchMatches")

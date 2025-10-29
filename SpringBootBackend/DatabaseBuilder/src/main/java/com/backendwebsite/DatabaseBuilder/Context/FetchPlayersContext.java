@@ -4,6 +4,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class FetchPlayersContext implements IContext {
@@ -18,7 +19,7 @@ public class FetchPlayersContext implements IContext {
     public List<Player> validatedPlayers = new ArrayList<>();
     public List<Player> existingPlayers = new ArrayList<>();
     public List<Player> finalPlayers = new ArrayList<>();
-    public List<StepLog> logs = new ArrayList<>();
+    public HashMap<String, List<StepLog>> logs = new HashMap<>();
 
 
     public FetchPlayersContext(Region region, String tier, String division, String queue, String page) {
