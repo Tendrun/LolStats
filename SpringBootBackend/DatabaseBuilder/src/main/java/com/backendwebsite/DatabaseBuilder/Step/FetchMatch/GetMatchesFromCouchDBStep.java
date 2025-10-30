@@ -34,7 +34,7 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
             String body = """
             {
               "selector": {
-                "_id": {
+                "puuid": {
                   "$in": %s
                 }
               },
@@ -44,7 +44,7 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
 
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
-            JsonNode rows = response.body() != null ? response.body().get("rows") : null;
+            JsonNode rows = response.body() != null ? response.body().get("docs") : null;
 
             if (rows != null && rows.isArray()) {
                 for (JsonNode row : rows) {
