@@ -3,13 +3,15 @@ package com.backendwebsite.DatabaseBuilder.Step.ChampionAnalytics;
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
 import com.backendwebsite.DatabaseBuilder.Constant.ChampionStatsMap.ChampionDetails;
 import com.backendwebsite.DatabaseBuilder.Context.BuildChampionAnalyticsContext;
-import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
-import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
+import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
+import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext> {
     CouchDBClient couchDBClient;
     ObjectMapper mapper;
+    private static final Logger logger = LoggerFactory.getLogger(UpsertChampStatsStep.class);
 
     public UpsertChampStatsStep(CouchDBClient couchDBClient, ObjectMapper mapper) {
         this.mapper = mapper;
@@ -51,13 +54,22 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
 
-            for (JsonNode row : response.body().get("docs")) {
-                ChampionDetails championDetailCouchDb = mapper.treeToValue(row, ChampionDetails.class);
+            JsonNode respBody = response != null ? response.body() : null;
+            JsonNode docsNode = respBody != null ? respBody.get("docs") : null;
 
-                context.championStatsMap.CHAMPION_MAP.stream()
-                        .filter(championDetail -> championDetail.championId == championDetailCouchDb.championId)
-                        .findFirst()
-                        .ifPresent(championDetail -> championDetail._rev = championDetailCouchDb._rev);
+            if (docsNode != null && docsNode.isArray()) {
+                for (JsonNode row : docsNode) {
+                    ChampionDetails championDetailCouchDb = mapper.treeToValue(row, ChampionDetails.class);
+
+                    context.championStatsMap.CHAMPION_MAP.stream()
+                            .filter(championDetail -> championDetail.championId == championDetailCouchDb.championId)
+                            .findFirst()
+                            .ifPresent(championDetail -> championDetail._rev = championDetailCouchDb._rev);
+                }
+            } else {
+                logger.warn("CouchDB response missing 'docs' for urn {} - body: {}", urn, respBody);
+                context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                        "CouchDB find for champion details returned no docs. Response body: " + respBody));
             }
 
             for (ChampionDetails championDetails : context.championStatsMap.CHAMPION_MAP) {
@@ -75,10 +87,22 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
             String json = mapper.writeValueAsString(Map.of("docs", docs));
             String urnCouchDB = "/championdetails/_bulk_docs";
 
-            couchDBClient.sendPost(urnCouchDB, json);
-            System.out.println("Request is send to CouchDB");
+            CouchDBClient.Response bulkResp = couchDBClient.sendPost(urnCouchDB, json);
+
+            if (bulkResp != null && bulkResp.status() == StepsOrder.RequestStatus.SUCCESSFUL) {
+                context.logs.add(new StepLog(bulkResp.status(), this.getClass().getSimpleName(),
+                        bulkResp.message() + " - Upserted " + context.championStatsMap.CHAMPION_MAP.size() + " docs"));
+                logger.info("Upserted {} champion docs. Response: {}", context.championStatsMap.CHAMPION_MAP.size(), bulkResp.message());
+            } else {
+                context.logs.add(new StepLog(bulkResp != null ? bulkResp.status() : StepsOrder.RequestStatus.FAILED,
+                        this.getClass().getSimpleName(),
+                        "Failed to upsert champion stats to CouchDB. Response: " + (bulkResp != null ? bulkResp.message() : "null")));
+                logger.warn("Failed to upsert champion stats. Response: {}", bulkResp != null ? bulkResp.message() : "null");
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
+                    + e.getMessage()));
+            logger.error("Exception in UpsertChampStatsStep", e);
         }
     }
 }

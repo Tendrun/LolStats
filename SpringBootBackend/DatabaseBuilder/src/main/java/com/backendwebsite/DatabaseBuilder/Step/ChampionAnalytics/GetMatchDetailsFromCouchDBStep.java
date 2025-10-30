@@ -8,12 +8,17 @@ import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class GetMatchDetailsFromCouchDBStep implements IStep<BuildChampionAnalyticsContext> {
     private final CouchDBClient couchDBClient;
     private final ObjectMapper mapper;
+    private static final Logger logger = LoggerFactory.getLogger(GetMatchDetailsFromCouchDBStep.class);
 
     public GetMatchDetailsFromCouchDBStep(ObjectMapper mapper, CouchDBClient couchDBClient) {
         this.mapper = mapper;
@@ -33,18 +38,28 @@ public class GetMatchDetailsFromCouchDBStep implements IStep<BuildChampionAnalyt
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
 
-            for (JsonNode row : response.body().get("docs")) {
-                MatchDTO matchDetail = mapper.treeToValue(row, MatchDTO.class);
+            JsonNode respBody = response != null ? response.body() : null;
+            JsonNode docs = respBody != null ? respBody.get("docs") : null;
 
-                context.matchDetails.add(matchDetail);
-                System.out.println("Get = " + matchDetail._id);
+            if (docs != null && docs.isArray()) {
+                for (JsonNode row : docs) {
+                    MatchDTO matchDetail = mapper.treeToValue(row, MatchDTO.class);
+
+                    context.matchDetails.add(matchDetail);
+                    logger.debug("Get = {}", matchDetail._id);
+                }
+
+                context.logs.add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
+                logger.info("Fetched {} match details from CouchDB", docs.size());
+            } else {
+                context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                        "CouchDB response missing 'docs' array" + " Response body: " + respBody));
+                logger.warn("CouchDB response missing 'docs' array for urn {} - body: {}", urn, respBody);
             }
-
-            context.logs.add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
         } catch (Exception e) {
             context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
                     + e.getMessage()));
-            e.printStackTrace();
+            logger.error("Exception while fetching match details from CouchDB", e);
         }
     }
 }
