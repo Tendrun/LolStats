@@ -3,16 +3,21 @@ package com.backendwebsite.DatabaseBuilder.Step.FetchMatchDetails;
 import com.backendwebsite.DatabaseBuilder.Client.CouchDBClient;
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchDetailsContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
+import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
+import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 @Component
 public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
     CouchDBClient couchDBClient;
     ObjectMapper mapper;
+    private static final Logger logger = LoggerFactory.getLogger(UpsertMatchDetailsStep.class);
 
     public UpsertMatchDetailsStep(CouchDBClient couchDBClient, ObjectMapper mapper) {
         this.mapper = mapper;
@@ -26,15 +31,36 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
 
     public void sendMatchDetailsToCouchDB(FetchMatchDetailsContext context) {
         try {
-            System.out.println(context.finalMatchDetails.getClass());
-            context.finalMatchDetails.forEach(e -> System.out.println(e.getClass()));
+            logger.debug("Final match details collection class: {}", context.finalMatchDetails.getClass());
+            context.finalMatchDetails.forEach(e -> logger.debug("Element class: {}", e.getClass()));
+
             String json = mapper.writeValueAsString(Map.of("docs", context.finalMatchDetails));
             String urnCouchDB = "/matchdetails/_bulk_docs";
 
-            couchDBClient.sendPost(urnCouchDB, json);
-            System.out.println("Request is send to CouchDB");
+            CouchDBClient.Response response = couchDBClient.sendPost(urnCouchDB, json);
+
+            if (response != null && response.status() == StepsOrder.RequestStatus.SUCCESSFUL) {
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(response.status(), this.getClass().getSimpleName(),
+                                response.message() + " - Upserted " + context.finalMatchDetails.size() +
+                                        " docs"));
+                logger.info("Request sent to CouchDB, upserted {} docs. Response: {}", context.finalMatchDetails.size(),
+                        response.message());
+            } else {
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(response != null ? response.status() : StepsOrder.RequestStatus.FAILED,
+                                this.getClass().getSimpleName(),
+                                "Failed to upsert match details to CouchDB. Response: " + (response != null ?
+                                        response.message() : "null")));
+                logger.warn("Failed to upsert match details to CouchDB. Response: {}", response != null ?
+                        response.message() : "null");
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                            "Exception: "
+                            + e.getMessage()));
+            logger.error("Exception while sending match details to CouchDB", e);
         }
     }
 }

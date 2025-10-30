@@ -16,7 +16,7 @@ public class FetchMatchDetailsContext implements IContext {
     }
 
     public Set<String> matchIds = new LinkedHashSet<>();
-    public List<StepLog> logs = new ArrayList<>();
+    public HashMap<String, List<StepLog>> logs = new HashMap<>();
     public List<MatchDTO> existingMatchDetails = new ArrayList<>();
     public List<MatchDTO> validatedMatchDetails = new ArrayList<>();
     public List<MatchDTO> fetchedMatchDetails = new ArrayList<>();

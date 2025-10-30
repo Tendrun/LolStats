@@ -6,10 +6,15 @@ import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
 
 @Component
 public class GetPlayerMatchIdsFromCouchDBStep implements IStep<FetchMatchDetailsContext> {
+    private static final Logger logger = LoggerFactory.getLogger(GetPlayerMatchIdsFromCouchDBStep.class);
 
     private final CouchDBClient couchDBClient;
 
@@ -32,26 +37,38 @@ public class GetPlayerMatchIdsFromCouchDBStep implements IStep<FetchMatchDetails
             """.formatted(context.playerMatchLimit);
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
-            for (JsonNode doc : response.body().get("docs")) {
-                JsonNode matchIdsNode = doc.get("matchIds");
-                if (matchIdsNode != null && matchIdsNode.isArray()) {
-                    for (JsonNode idNode : matchIdsNode) {
-                        String matchId = idNode.asText();
-                        context.matchIds.add(matchId);
-                        System.out.println("Get = " + matchId);
 
-                        context.logs.add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                                this.getClass().getSimpleName(),
-                                "Succeeded: " + response.message()));
+            JsonNode respBody = response.body();
+            JsonNode docs = respBody != null ? respBody.get("docs") : null;
+
+            if (docs != null && docs.isArray()) {
+                for (JsonNode doc : docs) {
+                    JsonNode matchIdsNode = doc != null ? doc.get("matchIds") : null;
+                    if (matchIdsNode != null && matchIdsNode.isArray()) {
+                        for (JsonNode idNode : matchIdsNode) {
+                            String matchId = idNode.asText();
+                            context.matchIds.add(matchId);
+                            logger.debug("Get = {}", matchId);
+
+                            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                                    .add(new StepLog(response.status(),
+                                            this.getClass().getSimpleName(),
+                                            "Succeeded: " + response.message() + " - matchId: " + matchId));
+                        }
                     }
                 }
+            } else {
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                "Error: CouchDB response missing 'docs' array" + " Response body: " + respBody));
+                logger.warn("CouchDB response missing 'docs' array for urn {} - body: {}", urn, respBody);
             }
 
         } catch (Exception e) {
-            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED,
-                    this.getClass().getSimpleName(), "Exception: "
-                    + e.getMessage()));
-            e.printStackTrace();
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED,
+                            this.getClass().getSimpleName(), "Exception: " + e.getMessage()));
+            logger.error("Exception while fetching player match ids from CouchDB", e);
         }
     }
 }

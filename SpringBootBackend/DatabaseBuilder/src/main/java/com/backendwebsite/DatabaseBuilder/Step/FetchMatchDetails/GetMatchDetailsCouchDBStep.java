@@ -8,12 +8,18 @@ import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
 
 @Component
 public class GetMatchDetailsCouchDBStep implements IStep<FetchMatchDetailsContext> {
     private final CouchDBClient couchDBClient;
     private final ObjectMapper mapper;
+    private static final Logger logger = LoggerFactory.getLogger(GetMatchDetailsCouchDBStep.class);
+
     public GetMatchDetailsCouchDBStep(ObjectMapper mapper, CouchDBClient couchDBClient) {
         this.mapper = mapper;
         this.couchDBClient = couchDBClient;
@@ -25,18 +31,39 @@ public class GetMatchDetailsCouchDBStep implements IStep<FetchMatchDetailsContex
             String urn = "/matchdetails/_all_docs?include_docs=true";
             CouchDBClient.Response response = couchDBClient.sendGet(urn);
 
-            for (JsonNode row : response.body().get("rows")) {
-                JsonNode doc = row.get("doc");
-                MatchDTO match = mapper.treeToValue(doc, MatchDTO.class);
-                context.existingMatchDetails.add(match);
+            JsonNode body = response != null ? response.body() : null;
+            JsonNode rows = body != null ? body.get("rows") : null;
 
-                System.out.println("Get = " + match._id);
+            if (rows != null && rows.isArray()) {
+                for (JsonNode row : rows) {
+                    JsonNode doc = row != null ? row.get("doc") : null;
+                    if (doc == null || doc.isNull()) {
+                        context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                                .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                        "Error: Docs empty in row" + " Response body: " + response.body()));
+                        logger.debug("Skipping row without 'doc': {}", row);
+                        continue;
+                    }
+
+                    MatchDTO match = mapper.treeToValue(doc, MatchDTO.class);
+                    context.existingMatchDetails.add(match);
+
+                    logger.debug("Get = {}", match._id);
+                }
+
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
+            } else {
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body()));
+                logger.warn("CouchDB response missing 'rows' array");
             }
-            context.logs.add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
         } catch (Exception e) {
-            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                    + e.getMessage()));
-            e.printStackTrace();
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
+                            + e.getMessage()));
+            logger.error("Exception while fetching match details from CouchDB", e);
         }
     }
 }
