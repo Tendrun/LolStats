@@ -12,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 public class GetMatchDetailsFromCouchDBStep implements IStep<BuildChampionAnalyticsContext> {
     private final CouchDBClient couchDBClient;
@@ -49,16 +47,20 @@ public class GetMatchDetailsFromCouchDBStep implements IStep<BuildChampionAnalyt
                     logger.debug("Get = {}", matchDetail._id);
                 }
 
-                context.logs.add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message() +
+                                " Fetched " + docs.size() + " match details from CouchDB"));
                 logger.info("Fetched {} match details from CouchDB", docs.size());
             } else {
-                context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                        "CouchDB response missing 'docs' array" + " Response body: " + respBody));
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                "CouchDB response missing 'docs' array" + " Response body: " + respBody));
                 logger.warn("CouchDB response missing 'docs' array for urn {} - body: {}", urn, respBody);
             }
         } catch (Exception e) {
-            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                    + e.getMessage()));
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
+                            + e.getMessage()));
             logger.error("Exception while fetching match details from CouchDB", e);
         }
     }

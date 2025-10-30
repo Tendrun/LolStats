@@ -68,8 +68,9 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
                 }
             } else {
                 logger.warn("CouchDB response missing 'docs' for urn {} - body: {}", urn, respBody);
-                context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                        "CouchDB find for champion details returned no docs. Response body: " + respBody));
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                "CouchDB find for champion details returned no docs. Response body: " + respBody));
             }
 
             for (ChampionDetails championDetails : context.championStatsMap.CHAMPION_MAP) {
@@ -90,18 +91,21 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
             CouchDBClient.Response bulkResp = couchDBClient.sendPost(urnCouchDB, json);
 
             if (bulkResp != null && bulkResp.status() == StepsOrder.RequestStatus.SUCCESSFUL) {
-                context.logs.add(new StepLog(bulkResp.status(), this.getClass().getSimpleName(),
-                        bulkResp.message() + " - Upserted " + context.championStatsMap.CHAMPION_MAP.size() + " docs"));
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                        .add(new StepLog(bulkResp.status(), this.getClass().getSimpleName(),
+                                bulkResp.message() + " - Upserted " + context.championStatsMap.CHAMPION_MAP.size() + " docs"));
                 logger.info("Upserted {} champion docs. Response: {}", context.championStatsMap.CHAMPION_MAP.size(), bulkResp.message());
             } else {
-                context.logs.add(new StepLog(bulkResp != null ? bulkResp.status() : StepsOrder.RequestStatus.FAILED,
-                        this.getClass().getSimpleName(),
-                        "Failed to upsert champion stats to CouchDB. Response: " + (bulkResp != null ? bulkResp.message() : "null")));
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                        .add(new StepLog(bulkResp != null ? bulkResp.status() : StepsOrder.RequestStatus.FAILED,
+                                this.getClass().getSimpleName(),
+                                "Failed to upsert champion stats to CouchDB. Response: " + (bulkResp != null ? bulkResp.message() : "null")));
                 logger.warn("Failed to upsert champion stats. Response: {}", bulkResp != null ? bulkResp.message() : "null");
             }
         } catch (Exception e) {
-            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                    + e.getMessage()));
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
+                            + e.getMessage()));
             logger.error("Exception in UpsertChampStatsStep", e);
         }
     }

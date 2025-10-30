@@ -62,14 +62,16 @@ public class CalculateChampStatsStep implements IStep<BuildChampionAnalyticsCont
                         context.championStatsMap.ALL_MATCHES_PLAYED);
             }
 
-            context.logs.add(new com.backendwebsite.DatabaseBuilder.Step.Log.StepLog(
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                    .add(new com.backendwebsite.DatabaseBuilder.Step.Log.StepLog(
                     com.backendwebsite.DatabaseBuilder.Step.StepsOrder.RequestStatus.SUCCESSFUL,
                     this.getClass().getSimpleName(),
                     "Champion stats calculation completed. Processed matches: " + context.matchDetails.size()
             ));
             logger.info("Champion stats calculation completed. Processed matches: {}", context.matchDetails.size());
         } catch (Exception e) {
-            context.logs.add(new com.backendwebsite.DatabaseBuilder.Step.Log.StepLog(
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                    .add(new com.backendwebsite.DatabaseBuilder.Step.Log.StepLog(
                     com.backendwebsite.DatabaseBuilder.Step.StepsOrder.RequestStatus.FAILED,
                     this.getClass().getSimpleName(),
                     "Exception during champion stats calculation: " + e.getMessage()

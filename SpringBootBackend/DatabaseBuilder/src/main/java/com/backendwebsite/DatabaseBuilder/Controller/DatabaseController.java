@@ -124,12 +124,27 @@ public class DatabaseController {
     }
 
     @PostMapping("/AnaliseMatches")
-    public ResponseEntity<List<StepLog>> analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
+    public ResponseEntity<HashMap<String, List<StepLog>>> analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
 
         BuildChampionAnalyticsContext context = new BuildChampionAnalyticsContext(req.limitMatches());
 
         championAnalyticsDirector.startWork(context);
 
-        return ResponseEntity.ok(context.logs);
+        HashMap<String, List<StepLog>> errorLogs = context.logs.values().stream()
+                .flatMap(List::stream)
+                .filter(log -> log.requestStatus() == StepsOrder.RequestStatus.FAILED)
+                .collect(Collectors.groupingBy(StepLog::stepName, HashMap::new, Collectors.toList()));
+
+        HashMap<String, List<StepLog>> result = new HashMap<>();
+        context.logs.keySet().forEach(step -> {
+            if (errorLogs.containsKey(step)) {
+                result.put(step, errorLogs.get(step));
+            } else {
+                result.put(step, new ArrayList<>(List.of(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
+                        step, "All operations successful."))));
+            }
+        });
+
+        return ResponseEntity.ok(result);
     }
 }
