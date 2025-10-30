@@ -8,11 +8,17 @@ import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
 
 @Component
 public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
     private final CouchDBClient couchDBClient;
+    private static final Logger logger = LoggerFactory.getLogger(GetMatchesFromCouchDBStep.class);
+
     private final ObjectMapper mapper;
     public GetMatchesFromCouchDBStep(ObjectMapper mapper, CouchDBClient couchDBClient) {
         this.mapper = mapper;
@@ -38,18 +44,30 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
 
 
             CouchDBClient.Response response = couchDBClient.sendPost(urn, body);
+            JsonNode rows = response.body() != null ? response.body().get("rows") : null;
 
-            for (JsonNode row : response.body().get("docs")) {
-                PlayerMatches playerMatches = mapper.treeToValue(row, PlayerMatches.class);
+            if (rows != null && rows.isArray()) {
+                for (JsonNode row : rows) {
+                    PlayerMatches playerMatches = mapper.treeToValue(row, PlayerMatches.class);
 
-                context.existingMatches.put(playerMatches.puuid(), playerMatches);
-                System.out.println("Get = " + playerMatches);
+                    context.existingMatches.put(playerMatches.puuid(), playerMatches);
+                    context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                            .add(new StepLog(response.status(), this.getClass().getSimpleName(),
+                                    response.message() + " - Fetched player matches ID: " + playerMatches._id()
+                                            + " Response body: " + response.body()));
+                    logger.debug("Get = {}", playerMatches._id());
+                }
+            } else {
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body()));
+                logger.warn("CouchDB response missing 'rows' array)");
             }
-            context.logs.add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
         } catch (Exception e) {
-            context.logs.add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                    + e.getMessage()));
-            e.printStackTrace();
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                            "Exception: " + e.getMessage()));
+            logger.error("Exception while fetching players matches from CouchDB", e);
         }
     }
 }

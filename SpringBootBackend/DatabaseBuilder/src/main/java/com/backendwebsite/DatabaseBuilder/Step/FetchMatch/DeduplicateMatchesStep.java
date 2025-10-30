@@ -3,22 +3,33 @@ package com.backendwebsite.DatabaseBuilder.Step.FetchMatch;
 import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
+import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Component
 public class DeduplicateMatchesStep implements IStep<FetchMatchesContext> {
-    private final ObjectMapper mapper;
-
-    public DeduplicateMatchesStep(ObjectMapper mapper) {
-        this.mapper = mapper;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(DeduplicateMatchesStep.class);
 
     @Override
     public void execute(FetchMatchesContext context) {
-        deduplicateMatches(context);
+        try {
+            deduplicateMatches(context);
+
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
+                            "Deduplication completed. Final player matches: " + context.finalPlayerMatches.size()));
+            logger.info("Deduplication completed. Final player matches: {}", context.finalPlayerMatches.size());
+        } catch (Exception e) {
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                            "Exception during deduplication: " + e.getMessage()));
+            logger.error("Exception during deduplication", e);
+        }
     }
 
     public void deduplicateMatches(FetchMatchesContext context) {
@@ -41,6 +52,9 @@ public class DeduplicateMatchesStep implements IStep<FetchMatchesContext> {
             String _id = "playerMatches:" + context.region + ":" + puuid;
             PlayerMatches playerMatches = new PlayerMatches(mergedMatchIds.stream().toList(), puuid, _id, rev);
             context.finalPlayerMatches.add(playerMatches);
+
+            logger.debug("Merged {} matchIds for puuid {} (existing size: {}, fetched size: {})",
+                    mergedMatchIds.size(), puuid, existingList.size(), fetchedList.size());
         }
     }
 }

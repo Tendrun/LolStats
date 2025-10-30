@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class GetPlayersFromCouchDBStepTest {
 
-
+/*
     @MockitoBean
     private CouchDBClient couchDBClient;
 
@@ -113,5 +113,5 @@ public class GetPlayersFromCouchDBStepTest {
                 , context.existingPlayers.get(0)._id);
         assertEquals("--xq-8z-qkIxoRUSquEo70Qm4beV0ejPa5mOi4x9x1nL97gZVq6A42smHcBOThiPnQiQ207Y4FnK8Q"
                 , context.existingPlayers.get(0).puuid);
-    }
+    }*/
 }

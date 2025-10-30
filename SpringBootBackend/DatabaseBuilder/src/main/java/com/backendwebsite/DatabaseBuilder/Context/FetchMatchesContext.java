@@ -39,7 +39,7 @@ public class FetchMatchesContext implements IContext {
     public HashMap<String, PlayerMatches> existingMatches = new HashMap<>();
     public HashMap<String, PlayerMatches> fetchedMatches = new HashMap<>();
     public List<PlayerMatches> finalPlayerMatches = new ArrayList<>();
-    public List<StepLog> logs = new ArrayList<>();
+    public HashMap<String, List<StepLog>> logs = new HashMap<>();
 
     public FetchMatchesContext(Region region, int playerLimit, Type type, Tier tier) {
         this.region = region;

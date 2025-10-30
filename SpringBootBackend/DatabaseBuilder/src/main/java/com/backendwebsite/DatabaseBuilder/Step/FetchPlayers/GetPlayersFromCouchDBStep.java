@@ -30,13 +30,11 @@ public class GetPlayersFromCouchDBStep implements IStep<FetchPlayersContext> {
             String urn = "/players/_all_docs?include_docs=true";
             CouchDBClient.Response response = couchDBClient.sendGet(urn);
 
-            // safe access: check response.body() for null to avoid NPE warning
             JsonNode rows = response.body() != null ? response.body().get("rows") : null;
             if (rows != null && rows.isArray()) {
                 for (JsonNode row : rows) {
                     JsonNode doc = row != null ? row.get("doc") : null;
                     if (doc == null || doc.isNull()) {
-                        // add failed StepLog to the list for this step
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                 .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                                         "Error: Docs empty in row" + " Response body: " + response.body()));
@@ -46,7 +44,6 @@ public class GetPlayersFromCouchDBStep implements IStep<FetchPlayersContext> {
                     Player player = mapper.treeToValue(doc, Player.class);
                     context.existingPlayers.add(player);
 
-                    // add success log to the list for this step
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                                     response.message() + " - Fetched player ID: " + player._id +
