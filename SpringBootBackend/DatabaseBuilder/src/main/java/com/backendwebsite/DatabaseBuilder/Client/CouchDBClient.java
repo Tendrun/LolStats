@@ -73,6 +73,7 @@ public class CouchDBClient {
             return new Response(RequestStatus.FAILED, null, "Unknown CouchDB error: " + statusCode);
         }
     }
+
     public Response sendPost(String urn, String json) {
 
         int statusCode = 0;
@@ -91,22 +92,55 @@ public class CouchDBClient {
 
             System.out.println("POST response body: " + responseBody);
 
+            JsonNode body = mapper.readTree(responseBody);
+
+            // Detect CouchDB per-document conflicts when bulk-inserting (response is an array)
+            try {
+                boolean hasConflict = false;
+                // collect conflicting items for easier debugging
+                java.util.List<JsonNode> conflicts = new java.util.ArrayList<>();
+
+                if (body.isArray()) {
+                    for (JsonNode item : body) {
+                        if (item.has("error") && "conflict".equals(item.get("error").asText())) {
+                            hasConflict = true;
+                            conflicts.add(item);
+                        }
+                    }
+                } else if (body.isObject()) {
+                    if (body.has("error") && "conflict".equals(body.get("error").asText())) {
+                        hasConflict = true;
+                        conflicts.add(body);
+                    }
+                }
+
+                if (hasConflict) {
+                    System.out.println("CouchDB: Some documents had conflicts during POST.");
+                    // return SKIPPED so caller can handle partial conflicts; include full body for inspection
+                    return new Response(RequestStatus.FAILED, body,
+                            "CouchDB: Some documents had conflicts during POST. Conflicts count: " + conflicts.size());
+                }
+            } catch (Exception parseEx) {
+                // If conflict-detection fails for any reason, continue and treat as successful read
+                System.err.println("Warning: failed to parse POST response for conflicts: " + parseEx.getMessage());
+            }
+
+
             if (statusCode == 200) {
-                JsonNode body = mapper.readTree(responseBody);
                 System.out.println("CouchDB: Document saved successfully.");
                 return new Response(RequestStatus.SUCCESSFUL, body, "CouchDB: Document post successfully");
             }
             else if (statusCode == 201) {
                 System.out.println("CouchDB: Document saved successfully.");
-                return new Response(RequestStatus.SUCCESSFUL, null, " CouchDB: Document post successfully");
+                return new Response(RequestStatus.SUCCESSFUL, body, " CouchDB: Document post successfully");
             }
             else if (statusCode == 409) {
                 System.out.println("CouchDB: Document already exists — skipped.");
-                return new Response(RequestStatus.SKIPPED, null, "CouchDB: Document already exists — skipped.");
+                return new Response(RequestStatus.SKIPPED, body, "CouchDB: Document already exists — skipped.");
             }
             else {
                 System.err.println("CouchDB request failed with status: " + statusCode);
-                return new Response(RequestStatus.FAILED, null, "CouchDB: Document already exists — skipped." +
+                return new Response(RequestStatus.FAILED, body, "CouchDB: Document already exists — skipped." +
                         statusCode);
             }
         }

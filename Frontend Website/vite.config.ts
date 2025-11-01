@@ -8,4 +8,12 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), eslintPlugin(), tailwindcss(), tsconfigPaths()],
+  server: {
+    port: 5174,
+    strictPort: true,
+  },
+  preview: {
+    port: 5174,
+    strictPort: true,
+  },
 })

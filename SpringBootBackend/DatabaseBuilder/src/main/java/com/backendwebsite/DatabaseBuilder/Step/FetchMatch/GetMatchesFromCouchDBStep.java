@@ -50,7 +50,8 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
                 for (JsonNode row : rows) {
                     PlayerMatches playerMatches = mapper.treeToValue(row, PlayerMatches.class);
 
-                    context.existingMatches.put(playerMatches.puuid(), playerMatches);
+                    // TO DO
+                    context.existingMatches.put(playerMatches._id(), playerMatches);
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                                     response.message() + " - Fetched player matches ID: " + playerMatches._id()

@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "vite --config vite.local.config.ts",
     "build": "vite build",
+    "build:local": "vite build --config vite.local.config.ts",
     "lint": "eslint --max-warnings=0 src",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:local": "vite preview --config vite.local.config.ts"
   },
   "dependencies": {
     "@nabla/vite-plugin-eslint": "^2.0.6",

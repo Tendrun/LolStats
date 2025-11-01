@@ -46,7 +46,7 @@ public class DatabaseController {
     public ResponseEntity<HashMap<String, List<StepLog>>> getPlayers(@RequestBody GetPlayersRequest req) {
 
         FetchPlayersContext context = new FetchPlayersContext(
-                (FetchPlayersContext.Region.valueOf(req.region())),
+                req.region(),
                 req.tier(),
                 req.division(),
                 req.queue(),
@@ -75,7 +75,7 @@ public class DatabaseController {
     @PostMapping("/FetchMatches")
     public ResponseEntity<HashMap<String, List<StepLog>>> getPlayers(@RequestBody GetMatchesRequest req) {
 
-        FetchMatchesContext context = new FetchMatchesContext(FetchMatchesContext.Region.valueOf(req.region()),
+        FetchMatchesContext context = new FetchMatchesContext(req.region(),
                 req.playerLimit(), req.type(), req.tier());
 
         fetchMatchesDirector.startWork(context);

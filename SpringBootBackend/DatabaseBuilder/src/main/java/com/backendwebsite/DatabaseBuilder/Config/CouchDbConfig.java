@@ -11,8 +11,8 @@ public class CouchDbConfig {
     @Bean
     public CouchDbClient couchDbClient() {
         CouchDbProperties properties = new CouchDbProperties()
-                .setDbName("championdetails")
-                .setCreateDbIfNotExist(true)
+                .setDbName("test_database")
+                .setCreateDbIfNotExist(false)
                 .setProtocol("http")
                 .setHost("localhost")
                 .setPort(5984)
