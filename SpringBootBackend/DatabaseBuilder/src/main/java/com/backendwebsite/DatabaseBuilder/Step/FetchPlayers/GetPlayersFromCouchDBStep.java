@@ -39,31 +39,50 @@ public class GetPlayersFromCouchDBStep implements IStep<FetchPlayersContext> {
                     if (doc == null || doc.isNull()) {
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                 .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                        logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Doc is empty in row", System.currentTimeMillis() - startTime));
-                        logger.debug("Skipping row without 'doc': {}", row);
+                                        "Row missing 'doc' field or doc is null",
+                                        System.currentTimeMillis() - startTime, ""));
+
+                        logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                                "Row missing 'doc' field or doc is null",
+                                System.currentTimeMillis() - startTime));
                         continue;
                     }
+
                     Player player = mapper.treeToValue(doc, Player.class);
                     context.existingPlayers.add(player);
-
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                                    response.message() + " - Fetched player puuid: " + player.puuid +
-                                            " Response body: " + response.body(), System.currentTimeMillis() - startTime, player.puuid));
-                    logger.debug("Get = {}", player.puuid);
-                    logger.debug("Get = {}", player.puuid);
+                            .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
+                                            "Loaded player from CouchDB",
+                                    System.currentTimeMillis() - startTime,
+                                    "puuid: " + player.puuid));
+
+                    logger.info("Loaded player puuid={}", player.puuid);
                 }
             }
             else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "CouchDB response missing rows array", System.currentTimeMillis() - startTime));
-                logger.warn("CouchDB response missing 'rows' array)");
-            }
-        } catch (Exception e) {
+                                "CouchDB response missing 'rows' array",
+                                System.currentTimeMillis() - startTime,
+                                ""));
+
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "CouchDB response missing 'rows' array",
+                        System.currentTimeMillis() - startTime));
+             }
+         } catch (Exception e) {
+            // Include exception message and make the log message clearer
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Exception fetching players", System.currentTimeMillis() - startTime), e);
-            logger.error("Exception while fetching players from CouchDB", e);
-        }
-    }
-}
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED,
+                            this.getClass().getSimpleName(),
+                            "Exception fetching players from CouchDB: " + e.getMessage(),
+                            System.currentTimeMillis() - startTime,
+                            ""));
+
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(),
+                    StepsOrder.RequestStatus.FAILED,
+                    "Exception while fetching players from CouchDB: " + e.getMessage(),
+                    System.currentTimeMillis() - startTime), e);
+         }
+     }
+ }

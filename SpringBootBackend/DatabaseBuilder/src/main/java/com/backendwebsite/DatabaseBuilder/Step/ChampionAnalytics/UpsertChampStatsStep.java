@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.Context.BuildChampionAnalyticsContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -71,11 +72,14 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
                                     championDetail._rev = championDetailCouchDb._rev);
                 }
             } else {
-                logger.warn("CouchDB response missing 'docs' for urn {} - body: {}", urn, respBody);
+                String respStr = respBody != null ? respBody.toString() : "null";
+                String msg = "CouchDB find for champion details returned no docs. Response body: " + respStr;
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "CouchDB find for champion details returned no docs. Response body: "
-                                        + respBody, System.currentTimeMillis() - startTime, ""));
+                                msg, System.currentTimeMillis() - startTime, ""));
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "CouchDB find returned no docs for urn " + urn, System.currentTimeMillis() - startTime)
+                        + " responseBody=" + respStr);
             }
 
             for (ChampionDetails championDetails : context.championStatsMap.CHAMPION_MAP) {
@@ -95,22 +99,41 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
 
             CouchDBClient.Response bulkResp = couchDBClient.sendPost(urnCouchDB, json);
 
-            if (bulkResp != null && bulkResp.status() == StepsOrder.RequestStatus.SUCCESSFUL) {
+            if (bulkResp == null || bulkResp.status() == StepsOrder.RequestStatus.FAILED) {
+                // Safe extraction of failedIds
+                List<String> failedIds = (bulkResp != null && bulkResp.failedIds() != null) ? bulkResp.failedIds() : new ArrayList<>();
+                int total = context.championStatsMap.CHAMPION_MAP.size();
+                int failedCount = failedIds.size();
+                int succeededCount = Math.max(0, total - failedCount);
+
+                // Build concise, structured message for logs and context
+                String summary = String.format("total=%d succeeded=%d failed=%d", total, succeededCount, failedCount);
+                String msg = String.format("Upsert summary: %s failedIds=%s", summary, failedIds);
+
+                // Store structured info in context.logs (id field stores comma-separated failedIds)
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                        .add(new StepLog(bulkResp.status(), this.getClass().getSimpleName(),
-                                bulkResp.message() + " - Upserted " +
-                                        context.championStatsMap.CHAMPION_MAP.size() + " docs", System.currentTimeMillis() - startTime, ""));
-                logger.info("Upserted {} champion docs. Response: {}",
-                        context.championStatsMap.CHAMPION_MAP.size(), bulkResp.message());
-            } else {
-                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                        .add(new StepLog(bulkResp != null ? bulkResp.status() : StepsOrder.RequestStatus.FAILED,
-                                this.getClass().getSimpleName(),
-                                "Failed to upsert champion stats to CouchDB. Response: " +
-                                        (bulkResp != null ? bulkResp.message() : "null"), System.currentTimeMillis() - startTime, ""));
-                logger.warn("Failed to upsert champion stats. Response: {}",
-                        bulkResp != null ? bulkResp.message() : "null");
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                msg, System.currentTimeMillis() - startTime, String.join(",", failedIds)));
+
+                String responseBodyStr = (bulkResp != null && bulkResp.body() != null) ? bulkResp.body().toString() : "null";
+                // Main error log: include counts and failed ids explicitly, formatted cleanly
+                String formattedPrefix = LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "Upsert failed for champion docs " + msg, System.currentTimeMillis() - startTime);
+                logger.error("{} responseBody={}", formattedPrefix, responseBodyStr);
+                return;
             }
+
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                    .add(new StepLog(bulkResp.status(), this.getClass().getSimpleName(),
+                            bulkResp.message() + " - Upserted " +
+                                    context.championStatsMap.CHAMPION_MAP.size() + " docs. Response body: " +
+                                    (bulkResp.body() != null ? bulkResp.body().toString() : "null"),
+                            System.currentTimeMillis() - startTime, ""));
+
+            logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), bulkResp.status(),
+                    "Upserted " + context.championStatsMap.CHAMPION_MAP.size() + " champion docs",
+                    System.currentTimeMillis() - startTime)
+                    + " responseBody=" + (bulkResp.body() != null ? bulkResp.body().toString() : "null"));
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),

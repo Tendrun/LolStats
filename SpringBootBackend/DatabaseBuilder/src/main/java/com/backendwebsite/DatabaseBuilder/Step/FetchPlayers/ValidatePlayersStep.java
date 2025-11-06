@@ -24,9 +24,13 @@ public class ValidatePlayersStep implements IStep<FetchPlayersContext> {
             for (Player player : context.fetchedPlayers) {
 
                 if (player.puuid == null) {
+                    String warnMsg = "Player missing puuid; skipping. _id=" + player._id;
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                    logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Player puuid is null", System.currentTimeMillis() - startTime));
+                                    warnMsg,
+                                    System.currentTimeMillis() - startTime, "puuid: null"));
+                    logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                            warnMsg, System.currentTimeMillis() - startTime));
                     logger.error("Skipping player with null puuid: {}", player);
                     continue;
                 }
@@ -38,16 +42,26 @@ public class ValidatePlayersStep implements IStep<FetchPlayersContext> {
                 player.region = context.region.name();
                 context.validatedPlayers.add(player);
 
+                String successMsg = "Player validated: puuid=" + player.puuid + ", _id=" + player._id;
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                                "Validated player puuid: " + player.puuid, System.currentTimeMillis() - startTime, player.puuid));
-                logger.debug("Validated player puuid: {}", player.puuid);
+                        .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
+                                this.getClass().getSimpleName(),
+                                successMsg,
+                                System.currentTimeMillis() - startTime, "puuid: " + player.puuid));
+
                 logger.debug("Validated player puuid: {}", player.puuid);
             }
         } catch (Exception e) {
+            String errMsg = "Exception during player validation: " + e.getMessage();
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Exception during validation", System.currentTimeMillis() - startTime), e);
-                            "Exception during player validation: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-        }
-    }
-}
+                            errMsg,
+                            System.currentTimeMillis() - startTime, ""));
+
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(),
+                    StepsOrder.RequestStatus.FAILED,
+                    errMsg,
+                    System.currentTimeMillis() - startTime), e);
+         }
+     }
+ }

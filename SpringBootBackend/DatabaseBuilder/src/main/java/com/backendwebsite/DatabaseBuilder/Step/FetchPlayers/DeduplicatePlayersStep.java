@@ -31,31 +31,49 @@ public class DeduplicatePlayersStep implements IStep<FetchPlayersContext> {
                     .filter(p -> !existingIds.contains(p._id))
                     .toList();
 
-            finalPlayers.forEach(player ->
-                    context.logs.computeIfAbsent(this.getClass().getSimpleName(), k -> new ArrayList<>())
-                            .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                                    "Player puuid " + player.puuid + " is unique and will be added.", System.currentTimeMillis() - startTime, player.puuid))
-                                    "Player puuid " + player.puuid + " is unique and will be added.", System.currentTimeMillis() - startTime, player.puuid))
-            );
+            for (Player player : finalPlayers) {
+                long execTime = System.currentTimeMillis() - startTime;
+                try {
+                    context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                            .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, getClass().getSimpleName(),
+                                    "Player puuid " + player.puuid + " is unique and will be added.",
+                                    execTime,
+                                    "puuid: " + player.puuid));
+
+                } catch (Exception exception) {
+                    context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                            .add(new StepLog(StepsOrder.RequestStatus.FAILED, getClass().getSimpleName(),
+                                    "Exception processing player: " + exception.getMessage(),
+                                    execTime,
+                                    "puuid: " + player.puuid));
+
+                    logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                            "Exception processing player " + player.puuid, execTime), exception);
+                }
+            }
+
 
             if(finalPlayers.isEmpty()) {
                 context.logs.computeIfAbsent(this.getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                                this.getClass().getSimpleName(),
-                                "No unique players found to add.", System.currentTimeMillis() - startTime, ""));
+                                getClass().getSimpleName(),
+                                "No unique players found to add.",
+                                System.currentTimeMillis() - startTime, ""));
             }
 
             logger.debug("Final deduplicated player IDs: {}", finalPlayers);
+            logger.info(LogFormatter.formatSummary(getClass().getSimpleName(), finalPlayers.size(),
+                    0, 0, System.currentTimeMillis() - startTime));
 
-
-            logger.info(LogFormatter.formatSummary(getClass().getSimpleName(), finalPlayers.size(), 0, 0, System.currentTimeMillis() - startTime));
             context.finalPlayers = new ArrayList<>(finalPlayers);
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                            "Exception during deduplication: " + e.getMessage(),
+                            System.currentTimeMillis() - startTime, ""));
+
             logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                     "Exception during deduplication", System.currentTimeMillis() - startTime), e);
-            logger.error("Exception during deduplication", e);
         }
     }
 }

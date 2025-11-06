@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -40,7 +41,7 @@ public class UpsertMatchesStep implements IStep<FetchMatchesContext> {
             for (PlayerMatches playerMatch : context.finalPlayerMatches) {
                 ObjectNode doc = mapper.valueToTree(playerMatch);
                 String rev = playerMatch._rev();
-                if(rev != null && !rev.trim().isEmpty()) {
+                if (rev != null && !rev.trim().isEmpty()) {
                     doc.put("_rev", rev);
                 } else {
                     doc.remove("_rev");
@@ -53,23 +54,35 @@ public class UpsertMatchesStep implements IStep<FetchMatchesContext> {
 
             CouchDBClient.Response response = couchDBClient.sendPost(urnCouchDB, json);
 
-            if (response != null && response.status() == StepsOrder.RequestStatus.SUCCESSFUL) {
+            if (response.status() == StepsOrder.RequestStatus.FAILED) {
+                String failMsg = response.message() + " - Upsert failed for " + context.finalPlayerMatches.size() +
+                        " docs. Response body: " + response.body();
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(response.status(), this.getClass().getSimpleName(),
-                                response.message() + " - Upserted " + context.finalPlayerMatches.size() + " docs", System.currentTimeMillis() - startTime, ""));
-                logger.info("Request sent to CouchDB, upserted {} docs. Response: {}", context.finalPlayerMatches.size(), response.message());
-            } else {
-                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(response != null ? response.status() : StepsOrder.RequestStatus.FAILED,
-                                this.getClass().getSimpleName(),
-                                "Failed to upsert matches to CouchDB. Response: " + (response != null ? response.message() : "null"), System.currentTimeMillis() - startTime, ""));
-                logger.warn("Failed to upsert matches to CouchDB. Response: {}", response != null ? response.message() : "null");
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                failMsg,
+                                System.currentTimeMillis() - startTime, ""));
+
+                logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "Upsert failed for " + context.finalPlayerMatches.size() + " matches",
+                        System.currentTimeMillis() - startTime)
+                        + " responseBody=" + response.body());
+                return;
             }
+
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(response.status(), this.getClass().getSimpleName(),
+                            response.message() + " - Upserted " + context.finalPlayerMatches.size() + " docs. Response body: " + response.body(),
+                            System.currentTimeMillis() - startTime, ""));
+
+            logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(),
+                    "Upserted " + context.finalPlayerMatches.size() + " matches", System.currentTimeMillis() - startTime));
+
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
                             + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-            logger.error("Exception while sending matches to CouchDB", e);
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                    "Exception while sending matches to CouchDB", System.currentTimeMillis() - startTime), e);
         }
     }
 }

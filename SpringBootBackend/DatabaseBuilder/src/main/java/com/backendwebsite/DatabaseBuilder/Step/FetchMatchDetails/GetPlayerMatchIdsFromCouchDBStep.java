@@ -54,7 +54,7 @@ public class GetPlayerMatchIdsFromCouchDBStep implements IStep<FetchMatchDetails
                             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                     .add(new StepLog(response.status(),
                                             this.getClass().getSimpleName(),
-                                            "Succeeded: " + response.message() + " - matchId: " + matchId, System.currentTimeMillis() - startTime, matchId));
+                                            "Succeeded: " + response.message() + " - matchId: " + matchId, System.currentTimeMillis() - startTime, "matchId: " + matchId));
                         }
                     }
                 }

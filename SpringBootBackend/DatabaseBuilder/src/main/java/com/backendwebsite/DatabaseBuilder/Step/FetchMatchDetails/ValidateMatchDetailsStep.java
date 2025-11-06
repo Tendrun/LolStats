@@ -23,7 +23,7 @@ public class ValidateMatchDetailsStep implements IStep<FetchMatchDetailsContext>
                     // add failed log and skip
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                    "Invalid match details - missing metadata.matchId", System.currentTimeMillis() - startTime, ""));
+                                    "Invalid match details - missing metadata.matchId", System.currentTimeMillis() - startTime, "matchId: null"));
                     logger.warn("Skipping invalid match details due to missing metadata.matchId");
                     continue;
                 }
@@ -35,7 +35,7 @@ public class ValidateMatchDetailsStep implements IStep<FetchMatchDetailsContext>
 
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
-                            "Validation completed. Validated count: " + context.validatedMatchDetails.size(), System.currentTimeMillis() - startTime, ""));
+                            "Validation completed. Validated count: " + context.validatedMatchDetails.size(), System.currentTimeMillis() - startTime, "count: " + context.validatedMatchDetails.size()));
 
             logger.info("Validation completed. Validated count: {}", context.validatedMatchDetails.size());
         } catch (Exception e) {

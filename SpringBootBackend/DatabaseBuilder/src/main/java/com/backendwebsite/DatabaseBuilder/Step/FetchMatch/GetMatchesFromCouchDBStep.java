@@ -56,7 +56,7 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                                     response.message() + " - Fetched player matches ID: " + playerMatches._id()
-                                            + " Response body: " + response.body(), System.currentTimeMillis() - startTime, playerMatches._id()));
+                                            + " Response body: " + response.body(), System.currentTimeMillis() - startTime, "playerMatchesId: " + playerMatches._id()));
                     logger.debug("Get = {}", playerMatches._id());
                 }
             } else {

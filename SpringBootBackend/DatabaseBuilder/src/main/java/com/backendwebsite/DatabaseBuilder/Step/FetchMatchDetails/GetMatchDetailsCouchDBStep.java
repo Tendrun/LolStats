@@ -53,7 +53,7 @@ public class GetMatchDetailsCouchDBStep implements IStep<FetchMatchDetailsContex
                 }
 
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message(), System.currentTimeMillis() - startTime, ""));
+                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message(), System.currentTimeMillis() - startTime, "count: " + context.existingMatchDetails.size()));
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),

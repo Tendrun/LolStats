@@ -45,30 +45,50 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
                     if (row == null || row.isNull()) {
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                 .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                        "Error: Docs empty in row", System.currentTimeMillis() - startTime, ""));
-                        logger.debug("Skipping row without data: {}", row);
+                                        "Error: Docs empty in row",
+                                        System.currentTimeMillis() - startTime,
+                                        ""));
+
+                        logger.debug("Error: Docs empty in row");
                         continue;
                     }
 
                 Player player = mapper.treeToValue(row, Player.class);
                 context.fetchedPlayers.add(player);
+
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
                                 "Fetched player puuid: " + player.puuid,
-                                "Fetched player puuid: " + player.puuid,
-                logger.info(LogFormatter.formatStepLogWithPuuid(getClass().getSimpleName(), StepsOrder.RequestStatus.SUCCESSFUL, player.puuid, System.currentTimeMillis() - startTime));
-                logger.debug("Get = {}", player.puuid);
+                                System.currentTimeMillis() - startTime,
+                                "puuid: " + player.puuid));
+
+                logger.info(LogFormatter.formatStepLogWithPuuid(getClass().getSimpleName(),
+                        StepsOrder.RequestStatus.SUCCESSFUL,
+                        player.puuid,
+                        System.currentTimeMillis() - startTime));
+
+                logger.debug("Get successfully = {}", player.puuid);
                 }
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Riot Games response missing body", System.currentTimeMillis() - startTime));
-                logger.warn("Error: Riot Games response missing body");
+                                "Riot Games response missing body",
+                        System.currentTimeMillis() - startTime,
+                        ""));
+
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "Riot Games response missing body", System.currentTimeMillis() - startTime));
             }
         } catch (Exception e){
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime), e);
-            logger.error("Exception while Pulling players from Riot Games", e);
+                            "Exception: " + e.getMessage(),
+                            System.currentTimeMillis() - startTime,
+                            ""));
+
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                    "Exception: " + e.getMessage(),
+                    System.currentTimeMillis() - startTime), e);
         }
     }
 }

@@ -67,7 +67,8 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
                                 this.getClass().getSimpleName(),
                                 response != null && response.status() == StepsOrder.RequestStatus.SUCCESSFUL
                                         ? "Fetched " + matchIds.size() + " match ids for puuid: " + puuid
-                                        : "Failed to fetch matches for puuid: " + puuid + " (urn: " + urnRiot + ")", System.currentTimeMillis() - stepStartTime, puuid));
+                                        : "Failed to fetch matches for puuid: " + puuid + " (urn: " + urnRiot + ")",
+                                System.currentTimeMillis() - stepStartTime, "puuid: " + puuid));
 
                 logger.debug("Fetched {} match ids for puuid {} (urn={})", matchIds.size(), puuid, urnRiot);
 
@@ -75,7 +76,8 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
                 // log exception to context logs and logger
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Exception fetching matches for puuid: " + puuid + " - " + e.getMessage(), System.currentTimeMillis() - stepStartTime, puuid));
+                                "Exception fetching matches for puuid: " + puuid + " - " + e.getMessage(),
+                                System.currentTimeMillis() - stepStartTime, "puuid: " + puuid));
                 logger.error("Exception while fetching matches for puuid {} (urn={})", puuid, urnRiot, e);
             }
 

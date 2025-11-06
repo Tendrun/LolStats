@@ -13,4 +13,3 @@ public final class Pipeline {
         for (IStep<C> step : stepsOrders.steps) step.execute(context);
     }
 }
-

@@ -38,20 +38,42 @@ public class UpsertPlayersStep implements IStep<FetchPlayersContext> {
 
             CouchDBClient.Response response = couchDBClient.sendPost(urnCouchDB, json);
 
+            if (response.status() == StepsOrder.RequestStatus.FAILED) {
+                String failMsg = response.message() + " - Upsert failed for " + context.finalPlayers.size() + " docs. Response body: " +
+                        response.body();
+                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                failMsg,
+                                System.currentTimeMillis() - startTime, "count: " + context.finalPlayers.size()));
+
+                logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "Upsert failed for " + context.finalPlayers.size() + " players",
+                        System.currentTimeMillis() - startTime)
+                        + " responseBody=" + response.body());
+                return;
+            }
+
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                             response.message() + " - Upserted " + context.finalPlayers.size() +
                                     " docs. Response body: " + response.body(),
-                            System.currentTimeMillis() - startTime, ""));
+                            System.currentTimeMillis() - startTime, "count: " + context.finalPlayers.size()));
+
             logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(),
                     "Upserted " + context.finalPlayers.size() + " players", System.currentTimeMillis() - startTime));
-            logger.info("Upserted players to CouchDB");
+
         } catch (Exception e) {
+            String exceptionMessage = "Exception while upserting players to CouchDB Exception: " + e.getMessage();
+
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
-                    "Exception upserting players", System.currentTimeMillis() - startTime), e);
-            logger.error("Exception while upserting players to CouchDB", e);
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                            exceptionMessage,
+                            System.currentTimeMillis() - startTime, ""));
+
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(),
+                    StepsOrder.RequestStatus.FAILED,
+                    exceptionMessage,
+                    System.currentTimeMillis() - startTime), e);
         }
     }
 }
