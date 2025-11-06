@@ -33,26 +33,29 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
     public void sendMatchDetailsToCouchDB(FetchMatchDetailsContext context) {
         long startTime = System.currentTimeMillis();
         try {
-            logger.debug("Final match details collection class: {}", context.finalMatchDetails.getClass());
-            context.finalMatchDetails.forEach(e -> logger.debug("Element class: {}", e.getClass()));
-
             String json = mapper.writeValueAsString(Map.of("docs", context.finalMatchDetails));
             String urnCouchDB = "/matchdetails/_bulk_docs";
 
             CouchDBClient.Response response = couchDBClient.sendPost(urnCouchDB, json);
 
             if (response.status() == StepsOrder.RequestStatus.FAILED) {
-                String failMsg = response.message() + " - Upsert failed for " + context.finalMatchDetails.size() + " docs. Response body: "
-                        + response.body();
+                java.util.List<String> failedIds = response.failedIds() != null ? response.failedIds() : new ArrayList<>();
+                int total = context.finalMatchDetails.size();
+                int failedCount = failedIds.size();
+                int succeededCount = Math.max(0, total - failedCount);
+
+                String summary = String.format("total=%d succeeded=%d failed=%d", total, succeededCount, failedCount);
+                String msg = String.format("Upsert summary: %s failedIds=%s", summary, failedIds);
+
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                failMsg,
-                                System.currentTimeMillis() - startTime, "count: " + context.finalMatchDetails.size()));
+                                msg,
+                                System.currentTimeMillis() - startTime));
 
-                logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
-                        "Upsert failed for " + context.finalMatchDetails.size() + " match details",
-                        System.currentTimeMillis() - startTime)
-                        + " responseBody=" + response.body());
+                String responseBodyStr = response.body() != null ? response.body().toString() : "null";
+                String formattedPrefix = LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "Upsert failed for match details " + msg, System.currentTimeMillis() - startTime);
+                logger.error("{} responseBody={}", formattedPrefix, responseBodyStr);
                 return;
             }
 
@@ -60,7 +63,7 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
                     .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                             response.message() + " - Upserted " + context.finalMatchDetails.size() + " docs. Response body: "
                                     + response.body(),
-                            System.currentTimeMillis() - startTime, "count: " + context.finalMatchDetails.size()));
+                            System.currentTimeMillis() - startTime));
 
             logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(),
                     "Upserted " + context.finalMatchDetails.size() + " match details",
@@ -69,7 +72,7 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             "Exception: "
-                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
+                            + e.getMessage(), System.currentTimeMillis() - startTime));
             logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                     "Exception while sending match details to CouchDB", System.currentTimeMillis() - startTime), e);
         }

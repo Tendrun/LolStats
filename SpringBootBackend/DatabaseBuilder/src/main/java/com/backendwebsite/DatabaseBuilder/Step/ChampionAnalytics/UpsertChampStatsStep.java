@@ -76,7 +76,7 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
                 String msg = "CouchDB find for champion details returned no docs. Response body: " + respStr;
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                msg, System.currentTimeMillis() - startTime, ""));
+                                msg, System.currentTimeMillis() - startTime));
                 logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                         "CouchDB find returned no docs for urn " + urn, System.currentTimeMillis() - startTime)
                         + " responseBody=" + respStr);
@@ -100,23 +100,19 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
             CouchDBClient.Response bulkResp = couchDBClient.sendPost(urnCouchDB, json);
 
             if (bulkResp == null || bulkResp.status() == StepsOrder.RequestStatus.FAILED) {
-                // Safe extraction of failedIds
                 List<String> failedIds = (bulkResp != null && bulkResp.failedIds() != null) ? bulkResp.failedIds() : new ArrayList<>();
                 int total = context.championStatsMap.CHAMPION_MAP.size();
                 int failedCount = failedIds.size();
                 int succeededCount = Math.max(0, total - failedCount);
 
-                // Build concise, structured message for logs and context
                 String summary = String.format("total=%d succeeded=%d failed=%d", total, succeededCount, failedCount);
                 String msg = String.format("Upsert summary: %s failedIds=%s", summary, failedIds);
 
-                // Store structured info in context.logs (id field stores comma-separated failedIds)
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                msg, System.currentTimeMillis() - startTime, String.join(",", failedIds)));
+                                msg, System.currentTimeMillis() - startTime));
 
                 String responseBodyStr = (bulkResp != null && bulkResp.body() != null) ? bulkResp.body().toString() : "null";
-                // Main error log: include counts and failed ids explicitly, formatted cleanly
                 String formattedPrefix = LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                         "Upsert failed for champion docs " + msg, System.currentTimeMillis() - startTime);
                 logger.error("{} responseBody={}", formattedPrefix, responseBodyStr);
@@ -128,17 +124,17 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
                             bulkResp.message() + " - Upserted " +
                                     context.championStatsMap.CHAMPION_MAP.size() + " docs. Response body: " +
                                     (bulkResp.body() != null ? bulkResp.body().toString() : "null"),
-                            System.currentTimeMillis() - startTime, ""));
+                            System.currentTimeMillis() - startTime));
 
             logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), bulkResp.status(),
                     "Upserted " + context.championStatsMap.CHAMPION_MAP.size() + " champion docs",
                     System.currentTimeMillis() - startTime)
                     + " responseBody=" + (bulkResp.body() != null ? bulkResp.body().toString() : "null"));
         } catch (Exception e) {
-            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             "Exception: "
-                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
+                            + e.getMessage(), System.currentTimeMillis() - startTime));
             logger.error("Exception in UpsertChampStatsStep", e);
         }
     }

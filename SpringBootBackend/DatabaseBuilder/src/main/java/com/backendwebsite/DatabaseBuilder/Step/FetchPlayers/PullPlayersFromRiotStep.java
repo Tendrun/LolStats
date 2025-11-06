@@ -46,8 +46,7 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                 .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                                         "Error: Docs empty in row",
-                                        System.currentTimeMillis() - startTime,
-                                        ""));
+                                        System.currentTimeMillis() - startTime));
 
                         logger.debug("Error: Docs empty in row");
                         continue;
@@ -59,8 +58,7 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
                                 "Fetched player puuid: " + player.puuid,
-                                System.currentTimeMillis() - startTime,
-                                "puuid: " + player.puuid));
+                                System.currentTimeMillis() - startTime));
 
                 logger.info(LogFormatter.formatStepLogWithPuuid(getClass().getSimpleName(),
                         StepsOrder.RequestStatus.SUCCESSFUL,
@@ -73,8 +71,7 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                                 "Riot Games response missing body",
-                        System.currentTimeMillis() - startTime,
-                        ""));
+                        System.currentTimeMillis() - startTime));
 
                 logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                         "Riot Games response missing body", System.currentTimeMillis() - startTime));
@@ -83,8 +80,7 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             "Exception: " + e.getMessage(),
-                            System.currentTimeMillis() - startTime,
-                            ""));
+                            System.currentTimeMillis() - startTime));
 
             logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                     "Exception: " + e.getMessage(),

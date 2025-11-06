@@ -44,7 +44,7 @@ public class UpsertPlayersStep implements IStep<FetchPlayersContext> {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                                 failMsg,
-                                System.currentTimeMillis() - startTime, "count: " + context.finalPlayers.size()));
+                                System.currentTimeMillis() - startTime));
 
                 logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                         "Upsert failed for " + context.finalPlayers.size() + " players",
@@ -57,7 +57,7 @@ public class UpsertPlayersStep implements IStep<FetchPlayersContext> {
                     .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                             response.message() + " - Upserted " + context.finalPlayers.size() +
                                     " docs. Response body: " + response.body(),
-                            System.currentTimeMillis() - startTime, "count: " + context.finalPlayers.size()));
+                            System.currentTimeMillis() - startTime));
 
             logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(),
                     "Upserted " + context.finalPlayers.size() + " players", System.currentTimeMillis() - startTime));
@@ -68,7 +68,7 @@ public class UpsertPlayersStep implements IStep<FetchPlayersContext> {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             exceptionMessage,
-                            System.currentTimeMillis() - startTime, ""));
+                            System.currentTimeMillis() - startTime));
 
             logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(),
                     StepsOrder.RequestStatus.FAILED,

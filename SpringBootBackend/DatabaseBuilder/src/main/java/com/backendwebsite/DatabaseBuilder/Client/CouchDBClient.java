@@ -34,7 +34,6 @@ public class CouchDBClient {
         this.communicationFactory = communicationFactory;
     }
 
-    // Dodajemy failedIds, domyślnie pusta lista
     public record Response(RequestStatus status, @Nullable JsonNode body,  @Nullable String message, List<String> failedIds) { }
 
     public Response sendPut(String urn, String json)  {

@@ -37,15 +37,13 @@ public class DeduplicatePlayersStep implements IStep<FetchPlayersContext> {
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, getClass().getSimpleName(),
                                     "Player puuid " + player.puuid + " is unique and will be added.",
-                                    execTime,
-                                    "puuid: " + player.puuid));
+                                    execTime));
 
                 } catch (Exception exception) {
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.FAILED, getClass().getSimpleName(),
                                     "Exception processing player: " + exception.getMessage(),
-                                    execTime,
-                                    "puuid: " + player.puuid));
+                                    execTime));
 
                     logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                             "Exception processing player " + player.puuid, execTime), exception);
@@ -58,7 +56,7 @@ public class DeduplicatePlayersStep implements IStep<FetchPlayersContext> {
                         .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
                                 getClass().getSimpleName(),
                                 "No unique players found to add.",
-                                System.currentTimeMillis() - startTime, ""));
+                                System.currentTimeMillis() - startTime));
             }
 
             logger.debug("Final deduplicated player IDs: {}", finalPlayers);
@@ -70,7 +68,7 @@ public class DeduplicatePlayersStep implements IStep<FetchPlayersContext> {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             "Exception during deduplication: " + e.getMessage(),
-                            System.currentTimeMillis() - startTime, ""));
+                            System.currentTimeMillis() - startTime));
 
             logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                     "Exception during deduplication", System.currentTimeMillis() - startTime), e);

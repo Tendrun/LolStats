@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -36,35 +37,42 @@ public class GetMatchDetailsCouchDBStep implements IStep<FetchMatchDetailsContex
             JsonNode rows = body != null ? body.get("rows") : null;
 
             if (rows != null && rows.isArray()) {
+                int fetchedCount = 0;
+                int skippedCount = 0;
+
                 for (JsonNode row : rows) {
                     JsonNode doc = row != null ? row.get("doc") : null;
                     if (doc == null || doc.isNull()) {
-                        context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                                .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                        "Error: Docs empty in row" + " Response body: " + response.body(), System.currentTimeMillis() - startTime, ""));
-                        logger.debug("Skipping row without 'doc': {}", row);
+                        skippedCount++;
                         continue;
                     }
 
                     MatchDTO match = mapper.treeToValue(doc, MatchDTO.class);
                     context.existingMatchDetails.add(match);
-
-                    logger.debug("Get = {}", match._id);
+                    fetchedCount++;
                 }
 
+                String summary = String.format("Fetched %d match details (skipped: %d)", fetchedCount, skippedCount);
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message(), System.currentTimeMillis() - startTime, "count: " + context.existingMatchDetails.size()));
+                        .add(new StepLog(response.status(), this.getClass().getSimpleName(),
+                                summary, System.currentTimeMillis() - startTime));
+
+                logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(),
+                        summary, System.currentTimeMillis() - startTime));
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body(), System.currentTimeMillis() - startTime, ""));
-                logger.warn("CouchDB response missing 'rows' array");
+                                "Error: CouchDB response missing 'rows' array. Response body: " + body,
+                                System.currentTimeMillis() - startTime));
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                        "CouchDB response missing 'rows' array", System.currentTimeMillis() - startTime));
             }
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-            logger.error("Exception while fetching match details from CouchDB", e);
+                            + e.getMessage(), System.currentTimeMillis() - startTime));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                    "Exception while fetching match details from CouchDB", System.currentTimeMillis() - startTime), e);
         }
     }
 }

@@ -5,6 +5,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -21,15 +22,21 @@ public class DeduplicateMatchesStep implements IStep<FetchMatchesContext> {
         try {
             deduplicateMatches(context);
 
+            String msg = "Deduplication completed. Final player matches: " + context.finalPlayerMatches.size();
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
-                            "Deduplication completed. Final player matches: " + context.finalPlayerMatches.size(), System.currentTimeMillis() - startTime, ""));
-            logger.info("Deduplication completed. Final player matches: {}", context.finalPlayerMatches.size());
+                            msg,
+                            System.currentTimeMillis() - startTime));
+            logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.SUCCESSFUL, msg,
+                    System.currentTimeMillis() - startTime));
         } catch (Exception e) {
+            String msg = "Exception during deduplication: " + e.getMessage();
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception during deduplication: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-            logger.error("Exception during deduplication", e);
+                            msg,
+                            System.currentTimeMillis() - startTime));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg,
+                    System.currentTimeMillis() - startTime), e);
         }
     }
 
@@ -37,7 +44,9 @@ public class DeduplicateMatchesStep implements IStep<FetchMatchesContext> {
         for (Map.Entry<String, PlayerMatches> entry : context.fetchedMatches.entrySet()) {
             Set<String> mergedMatchIds = new LinkedHashSet<>();
 
-            // key here is also player's puuid
+            // TO DO
+            // you can check if matches are up-to-date then skip player
+            // Also there should be a mechanics that checks if old matches are missing
             String key = entry.getKey();
 
             List<String> fetchedList = entry.getValue().matchIds();

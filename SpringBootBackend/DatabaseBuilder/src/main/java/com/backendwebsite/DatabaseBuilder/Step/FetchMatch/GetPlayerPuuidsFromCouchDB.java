@@ -5,6 +5,7 @@ import com.backendwebsite.DatabaseBuilder.Context.FetchMatchesContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,28 +45,37 @@ public class GetPlayerPuuidsFromCouchDB implements IStep<FetchMatchesContext> {
             JsonNode docs = bodyNode != null ? bodyNode.get("docs") : null;
 
             if (docs != null && docs.isArray()) {
+                int count = 0;
                 for (JsonNode doc : docs) {
                     JsonNode puuidNode = doc.get("puuid");
                     if (puuidNode != null && !puuidNode.isNull()) {
                         String puuid = puuidNode.asText();
                         context.puuids.add(puuid);
-                        context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                            .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message(), System.currentTimeMillis() - startTime, puuid));
-                        logger.debug("Get = {}", puuid);
+                        count++;
+                        logger.info("Fetched puuid: {}", puuid);
                     }
                 }
-            } else {
+                String msg = "Fetched " + count + " player puuids from CouchDB";
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: CouchDB response missing 'docs' array" + " Response body: " +
-                                        response.body(), System.currentTimeMillis() - startTime, ""));
-                logger.warn("CouchDB response missing 'rows' array)");
-            }
-        } catch (Exception e) {
-            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-            logger.error("Exception while fetching players puuids from CouchDB", e);
-        }
-    }
-}
+                    .add(new StepLog(response.status(), this.getClass().getSimpleName(), msg,
+                            System.currentTimeMillis() - startTime));
+                logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(), msg,
+                        System.currentTimeMillis() - startTime));
+             } else {
+                String msg = "CouchDB response missing 'docs' array. Response body: " + bodyNode;
+                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                msg, System.currentTimeMillis() - startTime));
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg,
+                        System.currentTimeMillis() - startTime));
+             }
+         } catch (Exception e) {
+            String msg = "Exception while fetching player puuids from CouchDB: " + e.getMessage();
+             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                            msg, System.currentTimeMillis() - startTime));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg,
+                    System.currentTimeMillis() - startTime), e);
+         }
+     }
+ }

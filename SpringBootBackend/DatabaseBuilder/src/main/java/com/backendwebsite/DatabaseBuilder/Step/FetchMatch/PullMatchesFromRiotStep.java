@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -42,17 +43,15 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
             try {
                 List<String> matchIds = new ArrayList<>();
                 if (response != null && response.body() != null && response.body().isArray()) {
-                    // convert to List<String>
-                    matchIds = mapper.convertValue(response.body(), new TypeReference<List<String>>() {});
+                    matchIds = mapper.convertValue(response.body(), new TypeReference<>() {});
                 } else if (response != null && response.body() != null) {
-                    // Try to convert anyway (safe fallback)
                     try {
-                        matchIds = mapper.convertValue(response.body(), new TypeReference<List<String>>() {});
+                        matchIds = mapper.convertValue(response.body(), new TypeReference<>() {});
                     } catch (IllegalArgumentException iae) {
-                        logger.warn("Unexpected Riot response body for puuid {}: {}", puuid, response.body());
+                        logger.error("Unexpected Riot response body shape for puuid {}: {}", puuid, response.body());
                     }
                 } else {
-                    logger.warn("Empty response body for puuid {} (urn={})", puuid, urnRiot);
+                    logger.error("Empty response body for puuid {} (urn={})", puuid, urnRiot);
                 }
 
                 String _id = "playerMatches:" + context.region + ":" + puuid;
@@ -61,27 +60,27 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
                 // Use puuid as the key so it aligns with existingMatches (which uses puuid as key)
                 context.fetchedMatches.put(_id, playerMatches);
 
-                // log to context
-                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(response != null ? response.status() : StepsOrder.RequestStatus.FAILED,
-                                this.getClass().getSimpleName(),
-                                response != null && response.status() == StepsOrder.RequestStatus.SUCCESSFUL
-                                        ? "Fetched " + matchIds.size() + " match ids for puuid: " + puuid
-                                        : "Failed to fetch matches for puuid: " + puuid + " (urn: " + urnRiot + ")",
-                                System.currentTimeMillis() - stepStartTime, "puuid: " + puuid));
+                String msg = (response != null && response.status() == StepsOrder.RequestStatus.SUCCESSFUL)
+                        ? "Fetched " + matchIds.size() + " match ids for puuid: " + puuid
+                        : "Failed to fetch matches for puuid: " + puuid;
+                 // log to context
+                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                         .add(new StepLog(response != null ? response.status() : StepsOrder.RequestStatus.FAILED,
+                                 this.getClass().getSimpleName(),
+                                 msg,
+                                 System.currentTimeMillis() - stepStartTime));
 
-                logger.debug("Fetched {} match ids for puuid {} (urn={})", matchIds.size(), puuid, urnRiot);
+                logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response != null ? response.status() : StepsOrder.RequestStatus.FAILED, msg, System.currentTimeMillis() - stepStartTime));
 
-            } catch (Exception e){
-                // log exception to context logs and logger
-                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Exception fetching matches for puuid: " + puuid + " - " + e.getMessage(),
-                                System.currentTimeMillis() - stepStartTime, "puuid: " + puuid));
-                logger.error("Exception while fetching matches for puuid {} (urn={})", puuid, urnRiot, e);
-            }
-
-            logger.debug("Request sent to Riot: {}", urnRiot);
-        }
-    }
-}
+             } catch (Exception e){
+                 String msg = "Exception fetching matches for puuid: " + puuid;
+                 // log exception to context logs and logger
+                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                 msg + " - " + e.getMessage(),
+                                 System.currentTimeMillis() - stepStartTime));
+                logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg, System.currentTimeMillis() - stepStartTime), e);
+             }
+         }
+     }
+ }

@@ -28,7 +28,7 @@ public class ValidatePlayersStep implements IStep<FetchPlayersContext> {
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                                     warnMsg,
-                                    System.currentTimeMillis() - startTime, "puuid: null"));
+                                    System.currentTimeMillis() - startTime));
                     logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
                             warnMsg, System.currentTimeMillis() - startTime));
                     logger.error("Skipping player with null puuid: {}", player);
@@ -47,7 +47,7 @@ public class ValidatePlayersStep implements IStep<FetchPlayersContext> {
                         .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
                                 this.getClass().getSimpleName(),
                                 successMsg,
-                                System.currentTimeMillis() - startTime, "puuid: " + player.puuid));
+                                System.currentTimeMillis() - startTime));
 
                 logger.debug("Validated player puuid: {}", player.puuid);
             }
@@ -56,7 +56,7 @@ public class ValidatePlayersStep implements IStep<FetchPlayersContext> {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             errMsg,
-                            System.currentTimeMillis() - startTime, ""));
+                            System.currentTimeMillis() - startTime));
 
             logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(),
                     StepsOrder.RequestStatus.FAILED,

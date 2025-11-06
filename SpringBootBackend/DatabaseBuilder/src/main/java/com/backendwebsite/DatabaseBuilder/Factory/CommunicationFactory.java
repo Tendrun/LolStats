@@ -33,9 +33,6 @@ public class CommunicationFactory {
     ///
     public HttpRequest createRequest(String urn, String region) {
         String uri = "https://" + region + ".api.riotgames.com" + urn;
-        System.out.println(uri);
-
-
         IRequest request = new Request();
         return request.create(apiRiotGamesKey, uri);
     }

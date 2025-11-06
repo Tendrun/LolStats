@@ -5,6 +5,7 @@ import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -32,20 +33,25 @@ public class DeduplicateMatchDetailsStep implements IStep<FetchMatchDetailsConte
 
             context.finalMatchDetails = new ArrayList<>(finalMatchDetails);
 
-            // add success log to context (logs is a Map<String, List<StepLog>>)
+            int deduped = context.validatedMatchDetails.size() - context.finalMatchDetails.size();
+            String summary = String.format("Deduplicated: %d kept: %d", deduped, context.finalMatchDetails.size());
+
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
                             this.getClass().getSimpleName(),
-                            "Deduplication completed. Final match details count: " + context.finalMatchDetails.size(), System.currentTimeMillis() - startTime, ""));
+                            summary,
+                            System.currentTimeMillis() - startTime));
 
-            logger.info("Deduplication completed. Final match details count: {}", context.finalMatchDetails.size());
+            logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.SUCCESSFUL,
+                    summary, System.currentTimeMillis() - startTime));
         } catch (Exception e) {
-            // add failed log to context
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED,
                             this.getClass().getSimpleName(),
-                            "Exception during deduplication: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-            logger.error("Exception during deduplication", e);
+                            "Exception: " + e.getMessage(),
+                            System.currentTimeMillis() - startTime));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                    "Exception during deduplication", System.currentTimeMillis() - startTime), e);
         }
     }
 }

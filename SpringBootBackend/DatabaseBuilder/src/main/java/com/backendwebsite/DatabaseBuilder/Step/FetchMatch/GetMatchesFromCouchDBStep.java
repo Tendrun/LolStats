@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Match.PlayerMatches;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -50,26 +51,31 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
             if (rows != null && rows.isArray()) {
                 for (JsonNode row : rows) {
                     PlayerMatches playerMatches = mapper.treeToValue(row, PlayerMatches.class);
-
-                    // TO DO
-                    context.existingMatches.put(playerMatches._id(), playerMatches);
-                    context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                            .add(new StepLog(response.status(), this.getClass().getSimpleName(),
-                                    response.message() + " - Fetched player matches ID: " + playerMatches._id()
-                                            + " Response body: " + response.body(), System.currentTimeMillis() - startTime, "playerMatchesId: " + playerMatches._id()));
-                    logger.debug("Get = {}", playerMatches._id());
-                }
-            } else {
-                context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body(), System.currentTimeMillis() - startTime, ""));
-                logger.warn("CouchDB response missing 'rows' array)");
+                     context.existingMatches.put(playerMatches._id(), playerMatches);
+                     logger.debug("Loaded player matches: {}", playerMatches._id());
+                 }
+                int fetchedCount = rows.size();
+                String msg = "Fetched " + fetchedCount + " player matches from CouchDB";
+                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                         .add(new StepLog(response.status(), this.getClass().getSimpleName(), msg,
+                                 System.currentTimeMillis() - startTime));
+                logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(), msg,
+                        System.currentTimeMillis() - startTime));
+             } else {
+                String msg = "CouchDB response missing 'docs' array. Response body: " + rows;
+                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                                 msg, System.currentTimeMillis() - startTime));
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg,
+                        System.currentTimeMillis() - startTime));
             }
-        } catch (Exception e) {
-            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-            logger.error("Exception while fetching players matches from CouchDB", e);
-        }
-    }
-}
+         } catch (Exception e) {
+            String msg = "Exception while fetching player matches from CouchDB: " + e.getMessage();
+             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                             msg, System.currentTimeMillis() - startTime));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg,
+                    System.currentTimeMillis() - startTime), e);
+         }
+     }
+ }

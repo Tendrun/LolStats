@@ -3,17 +3,20 @@ package com.backendwebsite.DatabaseBuilder.Client;
 import com.backendwebsite.DatabaseBuilder.Factory.CommunicationFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Component;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder.RequestStatus;
-
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class RiotApiClient {
+    private static final Logger logger = LoggerFactory.getLogger(RiotApiClient.class);
+
     private final HttpClient httpClient;
     private final ObjectMapper mapper;
     private final CommunicationFactory communicationFactory;
@@ -36,29 +39,33 @@ public class RiotApiClient {
             JsonNode body = mapper.readTree(response.body());
 
             if (statusCode == 200) {
-                System.out.println("Riot Client: Document received successfully.");
+                logger.info("Riot Client: Document received successfully for {} (status={}).", urn, statusCode);
                 return new Response(RequestStatus.SUCCESSFUL, body);
             } else if (statusCode == 401) {
-                System.err.println("Riot Client: Check Riot API Key");
+                logger.error("Riot Client: Check Riot API Key (status={}).", statusCode);
                 return new Response(RequestStatus.FAILED, body);
             } else if (statusCode == 429) {
                 int retry = 0;
+                final int maxRetries = 2;
 
-                System.err.println("Riot Client: Extended number of API calls, retry will occur");
-                while(retry < 2) {
+                logger.warn("Riot Client: rate limited (429), retry will occur for {}.", urn);
+                while (retry < maxRetries) {
 
-                    System.err.println("Retry:" + retry);
-                    Thread.sleep(120000);
+                    logger.warn("Riot Client: Retry attempt {} for {}.", retry + 1, urn);
+                    try {
+                        Thread.sleep(120000);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        logger.error("Riot Client: retry interrupted", ie);
+                        return new Response(RequestStatus.FAILED, body);
+                    }
 
                     request = communicationFactory.createRequest(urn, region);
                     response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                     statusCode = response.statusCode();
                     body = mapper.readTree(response.body());
 
-                    if (retry >= 2) {
-                        System.err.println("Riot Client: request failed with status: " + statusCode);
-                        return new Response(RequestStatus.FAILED, body);
-                    } else if (statusCode != 429) {
+                    if (statusCode != 429) {
                         break;
                     }
 
@@ -66,20 +73,19 @@ public class RiotApiClient {
                 }
 
                 if (statusCode == 200) {
-                    System.out.println("Riot Client: Document received successfully after retry.");
+                    logger.info("Riot Client: Document received successfully after retry for {}.", urn);
                     return new Response(RequestStatus.SUCCESSFUL, body);
                 } else {
-                    System.err.println("Riot Client: request failed after " + retry + 1
-                            + " retries. Status: " + statusCode);
+                    logger.error("Riot Client: request failed after {} retries. Status: {}", maxRetries, statusCode);
                     return new Response(RequestStatus.FAILED, body);
                 }
             }
             else {
-                System.err.println("Riot Client: request failed with status: " + statusCode);
+                logger.error("Riot Client: request failed with status: {} for {}.", statusCode, urn);
                 return new Response(RequestStatus.FAILED, body);
             }
         } catch (Exception e) {
-            System.err.println("Unknown error: " + e.getMessage());
+            logger.error("Riot Client: Unknown error while sending request for {}", urn, e);
             return new Response(RequestStatus.FAILED, null);
         }
     }

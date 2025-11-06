@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.DTO.RiotApi.MatchDetails.MatchDTO;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -43,26 +44,32 @@ public class GetMatchDetailsFromCouchDBStep implements IStep<BuildChampionAnalyt
             if (docs != null && docs.isArray()) {
                 for (JsonNode row : docs) {
                     MatchDTO matchDetail = mapper.treeToValue(row, MatchDTO.class);
-
                     context.matchDetails.add(matchDetail);
-                    logger.debug("Get = {}", matchDetail._id);
+                    logger.debug("Fetched match detail: {}", matchDetail._id);
                 }
 
+                int fetchedCount = docs.size();
+                String msg = "Fetched " + fetchedCount + " match details from CouchDB";
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message() +
-                                " Fetched " + docs.size() + " match details from CouchDB", System.currentTimeMillis() - startTime, ""));
-                logger.info("Fetched {} match details from CouchDB", docs.size());
+                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), msg,
+                                System.currentTimeMillis() - startTime));
+                logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(), msg,
+                        System.currentTimeMillis() - startTime));
             } else {
+                String msg = "CouchDB response missing 'docs' array. Response body: " + respBody;
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "CouchDB response missing 'docs' array" + " Response body: " + respBody, System.currentTimeMillis() - startTime, ""));
-                logger.warn("CouchDB response missing 'docs' array for urn {} - body: {}", urn, respBody);
+                        .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), msg,
+                                System.currentTimeMillis() - startTime));
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg,
+                        System.currentTimeMillis() - startTime));
             }
         } catch (Exception e) {
+            String msg = "Exception while fetching match details from CouchDB: " + e.getMessage();
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
-            logger.error("Exception while fetching match details from CouchDB", e);
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), msg,
+                            System.currentTimeMillis() - startTime));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, msg,
+                    System.currentTimeMillis() - startTime), e);
         }
     }
 }
