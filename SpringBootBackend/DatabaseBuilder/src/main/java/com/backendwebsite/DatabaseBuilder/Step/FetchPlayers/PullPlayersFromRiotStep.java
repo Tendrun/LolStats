@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
     }
 
     public void getPlayersFromRiot(FetchPlayersContext context) {
+        long startTime = System.currentTimeMillis();
         String urnRiot = "/lol/league/v4/entries/" + context.queue + "/" + context.tier + "/" +
                 context.division + "?page=" + context.page;
 
@@ -43,7 +45,7 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
                     if (row == null || row.isNull()) {
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                 .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                        "Error: Docs empty in row"));
+                                        "Error: Docs empty in row", System.currentTimeMillis() - startTime, ""));
                         logger.debug("Skipping row without data: {}", row);
                         continue;
                     }
@@ -51,20 +53,21 @@ public class PullPlayersFromRiotStep implements IStep<FetchPlayersContext> {
                 Player player = mapper.treeToValue(row, Player.class);
                 context.fetchedPlayers.add(player);
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
-                                "Fetched player ID: " + player._id));
-                logger.debug("Get = {}", player._id);
+                                "Fetched player puuid: " + player.puuid,
+                                "Fetched player puuid: " + player.puuid,
+                logger.info(LogFormatter.formatStepLogWithPuuid(getClass().getSimpleName(), StepsOrder.RequestStatus.SUCCESSFUL, player.puuid, System.currentTimeMillis() - startTime));
+                logger.debug("Get = {}", player.puuid);
                 }
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: Riot Games response missing body" + " Exception: " + response.body()));
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Riot Games response missing body", System.currentTimeMillis() - startTime));
                 logger.warn("Error: Riot Games response missing body");
             }
         } catch (Exception e){
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception: " + e.getMessage()));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime), e);
             logger.error("Exception while Pulling players from Riot Games", e);
         }
     }

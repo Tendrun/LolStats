@@ -30,6 +30,7 @@ public class FetchMatchDetailsRiotStep implements IStep<FetchMatchDetailsContext
 
     public void getMatchesFromRiot(FetchMatchDetailsContext context) {
         for (String matchId : context.matchIds) {
+            long stepStartTime = System.currentTimeMillis();
             String urnRiot = "/lol/match/v5/matches/" + matchId;
             RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region.name());
 
@@ -41,21 +42,21 @@ public class FetchMatchDetailsRiotStep implements IStep<FetchMatchDetailsContext
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
                                     this.getClass().getSimpleName(),
-                                    "Fetched match details for id: " + matchId));
+                                    "Fetched match details for id: " + matchId, System.currentTimeMillis() - stepStartTime, matchId));
 
                     logger.debug("Fetched match details for id {}", matchId);
                 } else {
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.FAILED,
                                     this.getClass().getSimpleName(),
-                                    "Empty response body for match id: " + matchId + " (urn: " + urnRiot + ")"));
+                                    "Empty response body for match id: " + matchId + " (urn: " + urnRiot + ")", System.currentTimeMillis() - stepStartTime, matchId));
                     logger.warn("Empty response body for match id {} (urn={})", matchId, urnRiot);
                 }
             } catch (Exception e){
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED,
                                 this.getClass().getSimpleName(),
-                                "Exception parsing match details for id: " + matchId + " - " + e.getMessage()));
+                                "Exception parsing match details for id: " + matchId + " - " + e.getMessage(), System.currentTimeMillis() - stepStartTime, matchId));
                 logger.error("Exception while parsing match details for id {} (urn={})", matchId, urnRiot, e);
             }
 

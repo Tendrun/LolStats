@@ -27,6 +27,7 @@ public class GetMatchDetailsCouchDBStep implements IStep<FetchMatchDetailsContex
 
     @Override
     public void execute(FetchMatchDetailsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             String urn = "/matchdetails/_all_docs?include_docs=true";
             CouchDBClient.Response response = couchDBClient.sendGet(urn);
@@ -40,7 +41,7 @@ public class GetMatchDetailsCouchDBStep implements IStep<FetchMatchDetailsContex
                     if (doc == null || doc.isNull()) {
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                 .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                        "Error: Docs empty in row" + " Response body: " + response.body()));
+                                        "Error: Docs empty in row" + " Response body: " + response.body(), System.currentTimeMillis() - startTime, ""));
                         logger.debug("Skipping row without 'doc': {}", row);
                         continue;
                     }
@@ -52,17 +53,17 @@ public class GetMatchDetailsCouchDBStep implements IStep<FetchMatchDetailsContex
                 }
 
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
+                        .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message(), System.currentTimeMillis() - startTime, ""));
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body()));
+                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body(), System.currentTimeMillis() - startTime, ""));
                 logger.warn("CouchDB response missing 'rows' array");
             }
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                            + e.getMessage()));
+                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while fetching match details from CouchDB", e);
         }
     }

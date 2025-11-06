@@ -17,17 +17,18 @@ public class DeduplicateMatchesStep implements IStep<FetchMatchesContext> {
 
     @Override
     public void execute(FetchMatchesContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             deduplicateMatches(context);
 
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
-                            "Deduplication completed. Final player matches: " + context.finalPlayerMatches.size()));
+                            "Deduplication completed. Final player matches: " + context.finalPlayerMatches.size(), System.currentTimeMillis() - startTime, ""));
             logger.info("Deduplication completed. Final player matches: {}", context.finalPlayerMatches.size());
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception during deduplication: " + e.getMessage()));
+                            "Exception during deduplication: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception during deduplication", e);
         }
     }

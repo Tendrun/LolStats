@@ -7,6 +7,7 @@ import com.backendwebsite.DatabaseBuilder.DTO.AppApi.AnaliseMatches.GetAnaliseMa
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.Match.GetMatchesRequest;
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.MatchDetails.GetMatchDetailsRequest;
 import com.backendwebsite.DatabaseBuilder.DTO.AppApi.Player.GetPlayersRequest;
+import com.backendwebsite.DatabaseBuilder.DTO.StepLogSummary;
 import com.backendwebsite.DatabaseBuilder.Director.ChampionAnalyticsDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchMatchDetailsDirector;
 import com.backendwebsite.DatabaseBuilder.Director.FetchMatchesDirector;
@@ -17,10 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/database")
@@ -41,10 +41,19 @@ public class DatabaseController {
         this.fetchMatchDetailsDirector = fetchMatchDetailsDirector;
     }
 
+    private Map<String, StepLogSummary> buildLogResponse(HashMap<String, List<StepLog>> contextLogs) {
+        Map<String, StepLogSummary> summary = new HashMap<>();
+
+        contextLogs.forEach((stepName, logs) -> {
+            summary.put(stepName, StepLogSummary.fromStepLogs(stepName, logs));
+        });
+
+        return summary;
+    }
+
 
     @PostMapping("/FetchPlayers")
-    public ResponseEntity<HashMap<String, List<StepLog>>> getPlayers(@RequestBody GetPlayersRequest req) {
-
+    public ResponseEntity<Map<String, StepLogSummary>> getPlayers(@RequestBody GetPlayersRequest req) {
         FetchPlayersContext context = new FetchPlayersContext(
                 req.region(),
                 req.tier(),
@@ -53,98 +62,31 @@ public class DatabaseController {
                 req.page());
 
         fetchPlayersDirector.startWork(context);
-
-        HashMap<String, List<StepLog>> errorLogs = context.logs.values().stream()
-                .flatMap(List::stream)
-                .filter(log -> log.requestStatus() == StepsOrder.RequestStatus.FAILED)
-                .collect(Collectors.groupingBy(StepLog::stepName, HashMap::new, Collectors.toList()));
-
-        HashMap<String, List<StepLog>> result = new HashMap<>();
-        context.logs.keySet().forEach(step -> {
-            if (errorLogs.containsKey(step)) {
-                result.put(step, errorLogs.get(step));
-            } else {
-                result.put(step, new ArrayList<>(List.of(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                        step, "All operations successful."))));
-            }
-        });
-
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(buildLogResponse(context.logs));
     }
 
     @PostMapping("/FetchMatches")
-    public ResponseEntity<HashMap<String, List<StepLog>>> getPlayers(@RequestBody GetMatchesRequest req) {
-
+    public ResponseEntity<Map<String, StepLogSummary>> getMatches(@RequestBody GetMatchesRequest req) {
         FetchMatchesContext context = new FetchMatchesContext(req.region(),
                 req.playerLimit(), req.type(), req.tier());
 
         fetchMatchesDirector.startWork(context);
-
-        HashMap<String, List<StepLog>> errorLogs = context.logs.values().stream()
-                .flatMap(List::stream)
-                .filter(log -> log.requestStatus() == StepsOrder.RequestStatus.FAILED)
-                .collect(Collectors.groupingBy(StepLog::stepName, HashMap::new, Collectors.toList()));
-
-        HashMap<String, List<StepLog>> result = new HashMap<>();
-        context.logs.keySet().forEach(step -> {
-            if (errorLogs.containsKey(step)) {
-                result.put(step, errorLogs.get(step));
-            } else {
-                result.put(step, new ArrayList<>(List.of(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                        step, "All operations successful."))));
-            }
-        });
-
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(buildLogResponse(context.logs));
     }
 
     @PostMapping("/FetchMatchDetails")
-    public ResponseEntity<HashMap<String, List<StepLog>>> FetchMatchDetails(@RequestBody GetMatchDetailsRequest req) {
-
+    public ResponseEntity<Map<String, StepLogSummary>> fetchMatchDetails(@RequestBody GetMatchDetailsRequest req) {
         FetchMatchDetailsContext context = new FetchMatchDetailsContext(req.playerMatchLimit(), req.region());
 
         fetchMatchDetailsDirector.startWork(context);
-
-        HashMap<String, List<StepLog>> errorLogs = context.logs.values().stream()
-                .flatMap(List::stream)
-                .filter(log -> log.requestStatus() == StepsOrder.RequestStatus.FAILED)
-                .collect(Collectors.groupingBy(StepLog::stepName, HashMap::new, Collectors.toList()));
-
-        HashMap<String, List<StepLog>> result = new HashMap<>();
-        context.logs.keySet().forEach(step -> {
-            if (errorLogs.containsKey(step)) {
-                result.put(step, errorLogs.get(step));
-            } else {
-                result.put(step, new ArrayList<>(List.of(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                        step, "All operations successful."))));
-            }
-        });
-
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(buildLogResponse(context.logs));
     }
 
     @PostMapping("/AnaliseMatches")
-    public ResponseEntity<HashMap<String, List<StepLog>>> analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
-
+    public ResponseEntity<Map<String, StepLogSummary>> analiseMatches(@RequestBody GetAnaliseMatchesRequest req) {
         BuildChampionAnalyticsContext context = new BuildChampionAnalyticsContext(req.limitMatches());
 
         championAnalyticsDirector.startWork(context);
-
-        HashMap<String, List<StepLog>> errorLogs = context.logs.values().stream()
-                .flatMap(List::stream)
-                .filter(log -> log.requestStatus() == StepsOrder.RequestStatus.FAILED)
-                .collect(Collectors.groupingBy(StepLog::stepName, HashMap::new, Collectors.toList()));
-
-        HashMap<String, List<StepLog>> result = new HashMap<>();
-        context.logs.keySet().forEach(step -> {
-            if (errorLogs.containsKey(step)) {
-                result.put(step, errorLogs.get(step));
-            } else {
-                result.put(step, new ArrayList<>(List.of(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                        step, "All operations successful."))));
-            }
-        });
-
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(buildLogResponse(context.logs));
     }
 }

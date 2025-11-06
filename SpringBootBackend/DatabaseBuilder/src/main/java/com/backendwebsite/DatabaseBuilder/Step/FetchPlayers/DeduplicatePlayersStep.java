@@ -5,6 +5,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,30 +21,41 @@ public class DeduplicatePlayersStep implements IStep<FetchPlayersContext> {
 
     @Override
     public void execute(FetchPlayersContext context) {
-        Set<String> existingIds = context.existingPlayers.stream()
-                .map(p -> p._id)
-                .collect(Collectors.toSet());
+        long startTime = System.currentTimeMillis();
+        try {
+            Set<String> existingIds = context.existingPlayers.stream()
+                    .map(p -> p._id)
+                    .collect(Collectors.toSet());
 
-        List<Player> finalPlayers = context.validatedPlayers.stream()
-                .filter(p -> !existingIds.contains(p._id))
-                .toList();
+            List<Player> finalPlayers = context.validatedPlayers.stream()
+                    .filter(p -> !existingIds.contains(p._id))
+                    .toList();
 
-        finalPlayers.forEach(player ->
+            finalPlayers.forEach(player ->
+                    context.logs.computeIfAbsent(this.getClass().getSimpleName(), k -> new ArrayList<>())
+                            .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
+                                    "Player puuid " + player.puuid + " is unique and will be added.", System.currentTimeMillis() - startTime, player.puuid))
+                                    "Player puuid " + player.puuid + " is unique and will be added.", System.currentTimeMillis() - startTime, player.puuid))
+            );
+
+            if(finalPlayers.isEmpty()) {
                 context.logs.computeIfAbsent(this.getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
                                 this.getClass().getSimpleName(),
-                                "Player ID " + player._id + " is unique and will be added."))
-        );
+                                "No unique players found to add.", System.currentTimeMillis() - startTime, ""));
+            }
 
-        if(finalPlayers.isEmpty()) {
-            context.logs.computeIfAbsent(this.getClass().getSimpleName(), k -> new ArrayList<>())
-                    .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
-                            this.getClass().getSimpleName(),
-                            "No unique players found to add."));
+            logger.debug("Final deduplicated player IDs: {}", finalPlayers);
+
+
+            logger.info(LogFormatter.formatSummary(getClass().getSimpleName(), finalPlayers.size(), 0, 0, System.currentTimeMillis() - startTime));
+            context.finalPlayers = new ArrayList<>(finalPlayers);
+        } catch (Exception e) {
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                    "Exception during deduplication", System.currentTimeMillis() - startTime), e);
+            logger.error("Exception during deduplication", e);
         }
-
-        logger.debug("Final deduplicated player IDs: {}", finalPlayers);
-
-        context.finalPlayers = new ArrayList<>(finalPlayers);
     }
 }

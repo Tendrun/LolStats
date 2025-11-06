@@ -21,6 +21,7 @@ public class GetPlayerPuuidsFromCouchDB implements IStep<FetchMatchesContext> {
 
     @Override
     public void execute(FetchMatchesContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             String urn = "/players/_find";
             String body = """
@@ -49,7 +50,7 @@ public class GetPlayerPuuidsFromCouchDB implements IStep<FetchMatchesContext> {
                         String puuid = puuidNode.asText();
                         context.puuids.add(puuid);
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                            .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message()));
+                            .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message(), System.currentTimeMillis() - startTime, puuid));
                         logger.debug("Get = {}", puuid);
                     }
                 }
@@ -57,13 +58,13 @@ public class GetPlayerPuuidsFromCouchDB implements IStep<FetchMatchesContext> {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                                 "Error: CouchDB response missing 'docs' array" + " Response body: " +
-                                        response.body()));
+                                        response.body(), System.currentTimeMillis() - startTime, ""));
                 logger.warn("CouchDB response missing 'rows' array)");
             }
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception: " + e.getMessage()));
+                            "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while fetching players puuids from CouchDB", e);
         }
     }

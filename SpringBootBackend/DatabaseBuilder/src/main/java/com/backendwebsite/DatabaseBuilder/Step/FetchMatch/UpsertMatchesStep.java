@@ -33,6 +33,7 @@ public class UpsertMatchesStep implements IStep<FetchMatchesContext> {
     }
 
     public void sendMatchesToCouchDB(FetchMatchesContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             ArrayNode docs = mapper.createArrayNode();
 
@@ -55,19 +56,19 @@ public class UpsertMatchesStep implements IStep<FetchMatchesContext> {
             if (response != null && response.status() == StepsOrder.RequestStatus.SUCCESSFUL) {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(response.status(), this.getClass().getSimpleName(),
-                                response.message() + " - Upserted " + context.finalPlayerMatches.size() + " docs"));
+                                response.message() + " - Upserted " + context.finalPlayerMatches.size() + " docs", System.currentTimeMillis() - startTime, ""));
                 logger.info("Request sent to CouchDB, upserted {} docs. Response: {}", context.finalPlayerMatches.size(), response.message());
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(response != null ? response.status() : StepsOrder.RequestStatus.FAILED,
                                 this.getClass().getSimpleName(),
-                                "Failed to upsert matches to CouchDB. Response: " + (response != null ? response.message() : "null")));
+                                "Failed to upsert matches to CouchDB. Response: " + (response != null ? response.message() : "null"), System.currentTimeMillis() - startTime, ""));
                 logger.warn("Failed to upsert matches to CouchDB. Response: {}", response != null ? response.message() : "null");
             }
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                            + e.getMessage()));
+                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while sending matches to CouchDB", e);
         }
     }

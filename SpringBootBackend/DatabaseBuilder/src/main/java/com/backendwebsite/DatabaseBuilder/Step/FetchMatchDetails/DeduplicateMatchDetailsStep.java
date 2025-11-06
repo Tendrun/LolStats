@@ -20,6 +20,7 @@ public class DeduplicateMatchDetailsStep implements IStep<FetchMatchDetailsConte
 
     @Override
     public void execute(FetchMatchDetailsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             Set<String> existingIds = context.existingMatchDetails.stream()
                     .map(p -> p.metadata.matchId)
@@ -35,7 +36,7 @@ public class DeduplicateMatchDetailsStep implements IStep<FetchMatchDetailsConte
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL,
                             this.getClass().getSimpleName(),
-                            "Deduplication completed. Final match details count: " + context.finalMatchDetails.size()));
+                            "Deduplication completed. Final match details count: " + context.finalMatchDetails.size(), System.currentTimeMillis() - startTime, ""));
 
             logger.info("Deduplication completed. Final match details count: {}", context.finalMatchDetails.size());
         } catch (Exception e) {
@@ -43,7 +44,7 @@ public class DeduplicateMatchDetailsStep implements IStep<FetchMatchDetailsConte
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED,
                             this.getClass().getSimpleName(),
-                            "Exception during deduplication: " + e.getMessage()));
+                            "Exception during deduplication: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception during deduplication", e);
         }
     }

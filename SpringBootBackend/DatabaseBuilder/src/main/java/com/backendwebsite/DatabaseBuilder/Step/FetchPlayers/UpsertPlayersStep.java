@@ -5,6 +5,7 @@ import com.backendwebsite.DatabaseBuilder.Context.FetchPlayersContext;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public class UpsertPlayersStep implements IStep<FetchPlayersContext> {
     }
 
     public void sendPlayerToCouchDB(FetchPlayersContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             String json = mapper.writeValueAsString(Map.of("docs", context.finalPlayers));
             String urnCouchDB = "/players/_bulk_docs";
@@ -38,13 +40,17 @@ public class UpsertPlayersStep implements IStep<FetchPlayersContext> {
 
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(response.status(), this.getClass().getSimpleName(),
-                            response.message() + " Response body: " + response.body()));
-
+                            response.message() + " - Upserted " + context.finalPlayers.size() +
+                                    " docs. Response body: " + response.body(),
+                            System.currentTimeMillis() - startTime, ""));
+            logger.info(LogFormatter.formatStepLog(getClass().getSimpleName(), response.status(),
+                    "Upserted " + context.finalPlayers.size() + " players", System.currentTimeMillis() - startTime));
             logger.info("Upserted players to CouchDB");
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                            + e.getMessage()));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED,
+                    "Exception upserting players", System.currentTimeMillis() - startTime), e);
             logger.error("Exception while upserting players to CouchDB", e);
         }
     }

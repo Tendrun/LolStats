@@ -34,6 +34,7 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
 
     public void getMatchesFromRiot(FetchMatchesContext context) {
         for (String puuid : context.puuids) {
+            long stepStartTime = System.currentTimeMillis();
             String urnRiot = "/lol/match/v5/matches/by-puuid/" + puuid + "/ids" + "?type=" + context.type  +
                     "&start=0&count=20";
             RiotApiClient.Response response = riotApiClient.sendRequest(urnRiot, context.region.name());
@@ -66,7 +67,7 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
                                 this.getClass().getSimpleName(),
                                 response != null && response.status() == StepsOrder.RequestStatus.SUCCESSFUL
                                         ? "Fetched " + matchIds.size() + " match ids for puuid: " + puuid
-                                        : "Failed to fetch matches for puuid: " + puuid + " (urn: " + urnRiot + ")"));
+                                        : "Failed to fetch matches for puuid: " + puuid + " (urn: " + urnRiot + ")", System.currentTimeMillis() - stepStartTime, puuid));
 
                 logger.debug("Fetched {} match ids for puuid {} (urn={})", matchIds.size(), puuid, urnRiot);
 
@@ -74,7 +75,7 @@ public class PullMatchesFromRiotStep implements IStep<FetchMatchesContext> {
                 // log exception to context logs and logger
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Exception fetching matches for puuid: " + puuid + " - " + e.getMessage()));
+                                "Exception fetching matches for puuid: " + puuid + " - " + e.getMessage(), System.currentTimeMillis() - stepStartTime, puuid));
                 logger.error("Exception while fetching matches for puuid {} (urn={})", puuid, urnRiot, e);
             }
 

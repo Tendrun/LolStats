@@ -24,6 +24,7 @@ public class GetPlayerMatchIdsFromCouchDBStep implements IStep<FetchMatchDetails
 
     @Override
     public void execute(FetchMatchDetailsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             String urn = "/matches/_find";
             String body = """
@@ -53,21 +54,21 @@ public class GetPlayerMatchIdsFromCouchDBStep implements IStep<FetchMatchDetails
                             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                     .add(new StepLog(response.status(),
                                             this.getClass().getSimpleName(),
-                                            "Succeeded: " + response.message() + " - matchId: " + matchId));
+                                            "Succeeded: " + response.message() + " - matchId: " + matchId, System.currentTimeMillis() - startTime, matchId));
                         }
                     }
                 }
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: CouchDB response missing 'docs' array" + " Response body: " + respBody));
+                                "Error: CouchDB response missing 'docs' array" + " Response body: " + respBody, System.currentTimeMillis() - startTime, ""));
                 logger.warn("CouchDB response missing 'docs' array for urn {} - body: {}", urn, respBody);
             }
 
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED,
-                            this.getClass().getSimpleName(), "Exception: " + e.getMessage()));
+                            this.getClass().getSimpleName(), "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while fetching player match ids from CouchDB", e);
         }
     }

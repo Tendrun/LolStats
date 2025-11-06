@@ -27,6 +27,7 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
 
     @Override
     public void execute(FetchMatchesContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             String idsJson = mapper.writeValueAsString(context.puuids);
 
@@ -55,19 +56,19 @@ public class GetMatchesFromCouchDBStep implements IStep<FetchMatchesContext> {
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                             .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                                     response.message() + " - Fetched player matches ID: " + playerMatches._id()
-                                            + " Response body: " + response.body()));
+                                            + " Response body: " + response.body(), System.currentTimeMillis() - startTime, playerMatches._id()));
                     logger.debug("Get = {}", playerMatches._id());
                 }
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body()));
+                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body(), System.currentTimeMillis() - startTime, ""));
                 logger.warn("CouchDB response missing 'rows' array)");
             }
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                            "Exception: " + e.getMessage()));
+                            "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while fetching players matches from CouchDB", e);
         }
     }

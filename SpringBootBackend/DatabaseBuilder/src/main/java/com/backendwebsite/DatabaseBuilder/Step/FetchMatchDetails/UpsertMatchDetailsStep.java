@@ -30,6 +30,7 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
     }
 
     public void sendMatchDetailsToCouchDB(FetchMatchDetailsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             logger.debug("Final match details collection class: {}", context.finalMatchDetails.getClass());
             context.finalMatchDetails.forEach(e -> logger.debug("Element class: {}", e.getClass()));
@@ -43,7 +44,7 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(response.status(), this.getClass().getSimpleName(),
                                 response.message() + " - Upserted " + context.finalMatchDetails.size() +
-                                        " docs"));
+                                        " docs", System.currentTimeMillis() - startTime, ""));
                 logger.info("Request sent to CouchDB, upserted {} docs. Response: {}", context.finalMatchDetails.size(),
                         response.message());
             } else {
@@ -51,7 +52,7 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
                         .add(new StepLog(response != null ? response.status() : StepsOrder.RequestStatus.FAILED,
                                 this.getClass().getSimpleName(),
                                 "Failed to upsert match details to CouchDB. Response: " + (response != null ?
-                                        response.message() : "null")));
+                                        response.message() : "null"), System.currentTimeMillis() - startTime, ""));
                 logger.warn("Failed to upsert match details to CouchDB. Response: {}", response != null ?
                         response.message() : "null");
             }
@@ -59,7 +60,7 @@ public class UpsertMatchDetailsStep implements IStep<FetchMatchDetailsContext> {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             "Exception: "
-                            + e.getMessage()));
+                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while sending match details to CouchDB", e);
         }
     }

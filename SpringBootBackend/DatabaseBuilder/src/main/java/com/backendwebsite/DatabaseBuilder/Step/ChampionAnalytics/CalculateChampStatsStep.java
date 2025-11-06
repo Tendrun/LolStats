@@ -14,6 +14,7 @@ public class CalculateChampStatsStep implements IStep<BuildChampionAnalyticsCont
 
     @Override
     public void execute(BuildChampionAnalyticsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             // Count match Details
             for (MatchDTO match : context.matchDetails) {
@@ -66,7 +67,9 @@ public class CalculateChampStatsStep implements IStep<BuildChampionAnalyticsCont
                     .add(new com.backendwebsite.DatabaseBuilder.Step.Log.StepLog(
                     com.backendwebsite.DatabaseBuilder.Step.StepsOrder.RequestStatus.SUCCESSFUL,
                     this.getClass().getSimpleName(),
-                    "Champion stats calculation completed. Processed matches: " + context.matchDetails.size()
+                    "Champion stats calculation completed. Processed matches: " + context.matchDetails.size(),
+                    System.currentTimeMillis() - startTime,
+                    ""
             ));
             logger.info("Champion stats calculation completed. Processed matches: {}", context.matchDetails.size());
         } catch (Exception e) {
@@ -74,7 +77,9 @@ public class CalculateChampStatsStep implements IStep<BuildChampionAnalyticsCont
                     .add(new com.backendwebsite.DatabaseBuilder.Step.Log.StepLog(
                     com.backendwebsite.DatabaseBuilder.Step.StepsOrder.RequestStatus.FAILED,
                     this.getClass().getSimpleName(),
-                    "Exception during champion stats calculation: " + e.getMessage()
+                    "Exception during champion stats calculation: " + e.getMessage(),
+                    System.currentTimeMillis() - startTime,
+                    ""
             ));
             logger.error("Exception during champion stats calculation", e);
         }

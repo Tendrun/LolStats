@@ -25,6 +25,7 @@ public class GetMatchDetailsFromCouchDBStep implements IStep<BuildChampionAnalyt
 
     @Override
     public void execute(BuildChampionAnalyticsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             String urn = "/matchdetails/_find";
             String body = """
@@ -49,18 +50,18 @@ public class GetMatchDetailsFromCouchDBStep implements IStep<BuildChampionAnalyt
 
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(response.status(), this.getClass().getSimpleName(), response.message() +
-                                " Fetched " + docs.size() + " match details from CouchDB"));
+                                " Fetched " + docs.size() + " match details from CouchDB", System.currentTimeMillis() - startTime, ""));
                 logger.info("Fetched {} match details from CouchDB", docs.size());
             } else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "CouchDB response missing 'docs' array" + " Response body: " + respBody));
+                                "CouchDB response missing 'docs' array" + " Response body: " + respBody, System.currentTimeMillis() - startTime, ""));
                 logger.warn("CouchDB response missing 'docs' array for urn {} - body: {}", urn, respBody);
             }
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
-                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                            + e.getMessage()));
+                    .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
+                            "Exception: " + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while fetching match details from CouchDB", e);
         }
     }

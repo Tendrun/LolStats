@@ -6,6 +6,7 @@ import com.backendwebsite.DatabaseBuilder.Domain.Player.Player;
 import com.backendwebsite.DatabaseBuilder.Step.IStep;
 import com.backendwebsite.DatabaseBuilder.Step.Log.StepLog;
 import com.backendwebsite.DatabaseBuilder.Step.StepsOrder;
+import com.backendwebsite.DatabaseBuilder.Util.LogFormatter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ public class GetPlayersFromCouchDBStep implements IStep<FetchPlayersContext> {
 
     @Override
     public void execute(FetchPlayersContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             String urn = "/players/_all_docs?include_docs=true";
             CouchDBClient.Response response = couchDBClient.sendGet(urn);
@@ -37,7 +39,7 @@ public class GetPlayersFromCouchDBStep implements IStep<FetchPlayersContext> {
                     if (doc == null || doc.isNull()) {
                         context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                                 .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                        "Error: Docs empty in row" + " Response body: " + response.body()));
+                        logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Doc is empty in row", System.currentTimeMillis() - startTime));
                         logger.debug("Skipping row without 'doc': {}", row);
                         continue;
                     }
@@ -45,22 +47,22 @@ public class GetPlayersFromCouchDBStep implements IStep<FetchPlayersContext> {
                     context.existingPlayers.add(player);
 
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
-                            .add(new StepLog(response.status(), this.getClass().getSimpleName(),
-                                    response.message() + " - Fetched player ID: " + player._id +
-                                            " Response body: " + response.body()));
-                    logger.debug("Get = {}", player._id);
+                                    response.message() + " - Fetched player puuid: " + player.puuid +
+                                            " Response body: " + response.body(), System.currentTimeMillis() - startTime, player.puuid));
+                    logger.debug("Get = {}", player.puuid);
+                    logger.debug("Get = {}", player.puuid);
                 }
             }
             else {
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                "Error: CouchDB response missing 'rows' array" + " Response body: " + response.body()));
+                logger.warn(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "CouchDB response missing rows array", System.currentTimeMillis() - startTime));
                 logger.warn("CouchDB response missing 'rows' array)");
             }
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(), "Exception: "
-                            + e.getMessage()));
+            logger.error(LogFormatter.formatStepLog(getClass().getSimpleName(), StepsOrder.RequestStatus.FAILED, "Exception fetching players", System.currentTimeMillis() - startTime), e);
             logger.error("Exception while fetching players from CouchDB", e);
         }
     }

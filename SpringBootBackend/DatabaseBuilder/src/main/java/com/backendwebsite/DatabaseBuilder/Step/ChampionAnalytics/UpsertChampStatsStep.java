@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
 
     @Override
     public void execute(BuildChampionAnalyticsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             ArrayNode docs = mapper.createArrayNode();
 
@@ -73,7 +75,7 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                                 "CouchDB find for champion details returned no docs. Response body: "
-                                        + respBody));
+                                        + respBody, System.currentTimeMillis() - startTime, ""));
             }
 
             for (ChampionDetails championDetails : context.championStatsMap.CHAMPION_MAP) {
@@ -97,7 +99,7 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
                 context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                         .add(new StepLog(bulkResp.status(), this.getClass().getSimpleName(),
                                 bulkResp.message() + " - Upserted " +
-                                        context.championStatsMap.CHAMPION_MAP.size() + " docs"));
+                                        context.championStatsMap.CHAMPION_MAP.size() + " docs", System.currentTimeMillis() - startTime, ""));
                 logger.info("Upserted {} champion docs. Response: {}",
                         context.championStatsMap.CHAMPION_MAP.size(), bulkResp.message());
             } else {
@@ -105,15 +107,15 @@ public class UpsertChampStatsStep implements IStep<BuildChampionAnalyticsContext
                         .add(new StepLog(bulkResp != null ? bulkResp.status() : StepsOrder.RequestStatus.FAILED,
                                 this.getClass().getSimpleName(),
                                 "Failed to upsert champion stats to CouchDB. Response: " +
-                                        (bulkResp != null ? bulkResp.message() : "null")));
+                                        (bulkResp != null ? bulkResp.message() : "null"), System.currentTimeMillis() - startTime, ""));
                 logger.warn("Failed to upsert champion stats. Response: {}",
                         bulkResp != null ? bulkResp.message() : "null");
             }
         } catch (Exception e) {
-            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
+            context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             "Exception: "
-                            + e.getMessage()));
+                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception in UpsertChampStatsStep", e);
         }
     }

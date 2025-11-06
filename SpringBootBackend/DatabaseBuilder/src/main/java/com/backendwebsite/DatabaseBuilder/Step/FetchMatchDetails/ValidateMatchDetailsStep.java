@@ -15,6 +15,7 @@ public class ValidateMatchDetailsStep implements IStep<FetchMatchDetailsContext>
 
     @Override
     public void execute(FetchMatchDetailsContext context) {
+        long startTime = System.currentTimeMillis();
         try {
             for (MatchDTO match : context.fetchedMatchDetails) {
 
@@ -22,7 +23,7 @@ public class ValidateMatchDetailsStep implements IStep<FetchMatchDetailsContext>
                     // add failed log and skip
                     context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                             .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
-                                    "Invalid match details - missing metadata.matchId"));
+                                    "Invalid match details - missing metadata.matchId", System.currentTimeMillis() - startTime, ""));
                     logger.warn("Skipping invalid match details due to missing metadata.matchId");
                     continue;
                 }
@@ -34,14 +35,14 @@ public class ValidateMatchDetailsStep implements IStep<FetchMatchDetailsContext>
 
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.SUCCESSFUL, this.getClass().getSimpleName(),
-                            "Validation completed. Validated count: " + context.validatedMatchDetails.size()));
+                            "Validation completed. Validated count: " + context.validatedMatchDetails.size(), System.currentTimeMillis() - startTime, ""));
 
             logger.info("Validation completed. Validated count: {}", context.validatedMatchDetails.size());
         } catch (Exception e) {
             context.logs.computeIfAbsent(getClass().getSimpleName(), k -> new java.util.ArrayList<>())
                     .add(new StepLog(StepsOrder.RequestStatus.FAILED, this.getClass().getSimpleName(),
                             "Exception: "
-                            + e.getMessage()));
+                            + e.getMessage(), System.currentTimeMillis() - startTime, ""));
             logger.error("Exception while validating match details", e);
         }
     }
