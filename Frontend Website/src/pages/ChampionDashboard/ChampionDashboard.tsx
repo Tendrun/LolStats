@@ -5,7 +5,8 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TooltipItem
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { getAllChampions } from "@/lib/api/ChampionApi";
@@ -14,24 +15,65 @@ import { ChampionStats } from "@/components/ChampionMap/ChampionMapping";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const options = {
-  responsive: true,
-  scales: { y: { beginAtZero: true } }
-};
-
 export default function ChampionDashboard() {
   const [champions, setChampions] = useState<ChampionStats[]>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+
+  const options = useMemo(() => ({
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      tooltip: {
+        callbacks: {
+          label: function(tooltipItem: TooltipItem<'bar'>) {
+            const datasetLabel = tooltipItem.dataset.label || '';
+            const value = tooltipItem.parsed.y ?? 0;
+            
+            if (datasetLabel === "Matches (normalized)" && champions) {
+              // Find the champion by name (not by index, to avoid index mismatch with filtered data)
+              const championName = tooltipItem.label;
+              const champion = champions.find((c) => c.name === championName);
+              const originalMatches = champion?.totalMatchesPicked || 0;
+              return `${datasetLabel}: ${originalMatches} matches`;
+            }
+            
+            return `${datasetLabel}: ${value.toFixed(1)}%`;
+          }
+        }
+      }
+    },
+    scales: { 
+      y: { 
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Percentage / Normalized Value'
+        }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Champions'
+        },
+        barPercentage: 1, // Increase for thicker bars (max 1)
+        categoryPercentage: 1 // Increase for thicker bars (max 1)
+      }
+    }
+  }), [champions]);
 
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
     setError(null);
 
-    getAllChampions() // only if your API accepts signal; otherwise omit
+    getAllChampions()
       .then((data) => {
         setChampions(data);
+        setSelected(data.map((c: ChampionStats) => c.name)); // select all by default
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
@@ -43,7 +85,7 @@ export default function ChampionDashboard() {
       });
 
     return () => {
-      controller.abort(); // cancel fetch on unmount
+      controller.abort();
     };
   }, []);
 
@@ -52,7 +94,7 @@ export default function ChampionDashboard() {
     if (!champions || champions.length === 0) {
       // fallback sample data while loading / if no data
       return {
-        ["empty labels"]: [],
+        labels: [],
         datasets: [
           {
             label: "Brak danych",
@@ -65,39 +107,92 @@ export default function ChampionDashboard() {
       };
     }
 
-    // Use a numeric champion metric for the chart. `ChampionStats` exposes `totalMatchesPicked` (number).
-    // Build labels from champion names and data from totalMatchesPicked so types line up with Chart.js (number[]).
-    const champLabels = champions.map((c) => c.name);
-    const values: number[] = champions.map((c) => Number(c.totalMatchesPicked ?? 0));
-
-    // simple color palette (repeat if needed)
-    const colors = champions.map((_, i) => {
-      const base = [54, 162, 235];
-      const alpha = 0.6 - Math.min(i * 0.01, 0.45);
-      return `rgba(${base[0]},${base[1]},${base[2]},${alpha})`;
+    // Filter champions by selection
+    const filtered = champions.filter((c) => selected.includes(c.name));
+    const champLabels = filtered.map((c) => c.name);
+    // Extract data for each metric - handle both string and number formats
+    const pickRateData = filtered.map((c) => {
+      const rate = typeof c.pickRate === 'string' ? parseFloat(c.pickRate.replace('%', '')) : parseFloat(String(c.pickRate));
+      return isNaN(rate) ? 0 : rate;
     });
+    const banRateData = filtered.map((c) => {
+      const rate = typeof c.banRate === 'string' ? parseFloat(c.banRate.replace('%', '')) : parseFloat(String(c.banRate));
+      return isNaN(rate) ? 0 : rate;
+    });
+    const winRateData = filtered.map((c) => {
+      const rate = typeof c.winRate === 'string' ? parseFloat(c.winRate.replace('%', '')) : parseFloat(String(c.winRate));
+      return isNaN(rate) ? 0 : rate;
+    });
+    const matchesData = filtered.map((c) => Number(c.totalMatchesPicked ?? 0));
+
+    // Normalize matches data to be on a similar scale as percentages (0-100)
+    const maxMatches = Math.max(...matchesData);
+    const normalizedMatches = matchesData.map(matches => 
+      maxMatches > 0 ? (matches / maxMatches) * 100 : 0
+    );
 
     return {
       labels: champLabels,
       datasets: [
         {
-          label: "Total Matches Picked",
-          data: values,
-          backgroundColor: colors,
-          borderColor: "rgb(54,162,235)",
+          label: "Pick Rate (%)",
+          data: pickRateData,
+          backgroundColor: "rgba(54, 162, 235, 0.6)",
+          borderColor: "rgb(54, 162, 235)",
+          borderWidth: 1
+        },
+        {
+          label: "Ban Rate (%)",
+          data: banRateData,
+          backgroundColor: "rgba(255, 99, 132, 0.6)",
+          borderColor: "rgb(255, 99, 132)",
+          borderWidth: 1
+        },
+        {
+          label: "Win Rate (%)",
+          data: winRateData,
+          backgroundColor: "rgba(75, 192, 192, 0.6)",
+          borderColor: "rgb(75, 192, 192)",
+          borderWidth: 1
+        },
+        {
+          label: "Matches (normalized)",
+          data: normalizedMatches,
+          backgroundColor: "rgba(255, 205, 86, 0.6)",
+          borderColor: "rgb(255, 205, 86)",
           borderWidth: 1
         }
       ]
     };
-  }, [champions]);
+  }, [champions, selected]);
 
   if (loading) return <div className="p-6">Loading champions…</div>;
   if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
 
   return (
-    <div className="p-6 max-w-lg mx-auto">
+    <div className="p-6 max-w-full mx-auto">
       <h2 className="text-xl font-semibold mb-4">Champion Dashboard</h2>
-      <div style={{ width: 1420, height: 420 }}>
+      {champions && (
+        <div className="mb-4 flex flex-wrap gap-2 max-h-48 overflow-y-auto border p-2 rounded bg-white/80">
+          {champions.map((champ) => (
+            <label key={champ.name} style={{ minWidth: 120, display: 'inline-flex', alignItems: 'center', marginRight: 8 }}>
+              <input
+                type="checkbox"
+                checked={selected.includes(champ.name)}
+                onChange={() => {
+                  setSelected((prev) =>
+                    prev.includes(champ.name)
+                      ? prev.filter((n) => n !== champ.name)
+                      : [...prev, champ.name]
+                  );
+                }}
+              />
+              <span style={{ marginLeft: 4 }}>{champ.name}</span>
+            </label>
+          ))}
+        </div>
+      )}
+      <div style={{ width: 4000, height: 420 }}>
         <Bar data={chartData} options={{ ...options, maintainAspectRatio: false }} />
       </div>
     </div>
